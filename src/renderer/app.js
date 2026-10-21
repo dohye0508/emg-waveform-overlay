@@ -15,6 +15,11 @@ function fit() {
 window.addEventListener('resize', fit);
 fit();
 
+// 관리자 화면 ↔ 사용자 화면
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.code === 'KeyD') { e.preventDefault(); window.api.setMode('user'); }
+});
+
 // 칸 머리의 아이콘 (선 굵기·크기 통일)
 const ICONS = {
   threshold: '<path d="M3 17l5-6 4 3 4-7 5 5"/><path d="M3 9h18" stroke-dasharray="2 3"/>',

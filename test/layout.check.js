@@ -1,6 +1,6 @@
 'use strict';
 
-// 개발용: node test/layout.check.js [port] [screenshot-dir]
+// 개발용: node test/layout.check.js [port] [screenshot-dir] [index.html|home.html]
 // 실행 중인 앱(--remote-debugging-port)의 설정 화면을 여러 창 크기로 열어 넘치거나 줄바꿈된 요소가 0개인지 본다.
 
 const fs = require('fs');
@@ -8,6 +8,7 @@ const path = require('path');
 
 const port = Number(process.argv[2]) || 9333;
 const shotDir = process.argv[3];
+const pageMatch = process.argv[4] || 'index.html'; // 사용자 화면은 home.html
 
 async function connect(match) {
   const list = await (await fetch(`http://localhost:${port}/json`)).json();
@@ -55,17 +56,17 @@ const CHECK = `(() => {
 
 (async () => {
   let failed = 0;
-  const win = await connect('index.html');
+  const win = await connect(pageMatch);
   for (const [w, h] of [[1440, 900], [1280, 720], [1024, 640], [800, 600]]) {
     await win.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
     await new Promise((r) => setTimeout(r, 400));
     const bad = await win.evaluate(CHECK);
-    console.log(`설정 화면 ${w}x${h}: 문제 ${bad.length}개`);
+    console.log(`${pageMatch} ${w}x${h}: 문제 ${bad.length}개`);
     bad.forEach((b) => console.log('   ' + b));
     failed += bad.length;
     if (shotDir) {
       const shot = await win.send('Page.captureScreenshot', { format: 'png' });
-      fs.writeFileSync(path.join(shotDir, `settings-${w}x${h}.png`), Buffer.from(shot.result.data, 'base64'));
+      fs.writeFileSync(path.join(shotDir, `${pageMatch.replace('.html', '')}-${w}x${h}.png`), Buffer.from(shot.result.data, 'base64'));
     }
   }
   await win.send('Emulation.clearDeviceMetricsOverride');

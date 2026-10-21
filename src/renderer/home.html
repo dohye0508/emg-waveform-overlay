@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<title>EMG 게임</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="home.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>근육으로 게임하기</h1>
+    <div id="status" class="pill"><i class="dot"></i><span id="status-text">장치 없음</span></div>
+  </header>
+
+  <main>
+    <section class="game g-gd" data-id="gd">
+      <div class="art">
+        <svg viewBox="0 0 640 300" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="gdsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E57D6"/><stop offset="1" stop-color="#14286E"/></linearGradient>
+            <linearGradient id="gdcube" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD34D"/><stop offset="1" stop-color="#FF9A1F"/></linearGradient>
+          </defs>
+          <rect width="640" height="300" fill="url(#gdsky)"/>
+          <g fill="none" stroke="#5E83F0" stroke-opacity="0.35" stroke-width="3">
+            <rect x="40" y="40" width="70" height="70"/><rect x="470" y="30" width="90" height="90"/><rect x="300" y="60" width="50" height="50"/>
+          </g>
+          <rect y="230" width="640" height="70" fill="#0C1A4D"/>
+          <rect y="228" width="640" height="4" fill="#9FB8FF"/>
+          <g fill="#0C1A4D" stroke="#fff" stroke-width="4" stroke-linejoin="round">
+            <path d="M380 228 L410 172 L440 228 Z"/><path d="M440 228 L470 172 L500 228 Z"/>
+          </g>
+          <g transform="translate(180 128) rotate(-12 50 50)">
+            <rect width="100" height="100" rx="6" fill="url(#gdcube)" stroke="#2A1600" stroke-width="6"/>
+            <rect x="22" y="22" width="56" height="56" rx="4" fill="#3EE0FF" stroke="#2A1600" stroke-width="5"/>
+            <rect x="34" y="36" width="10" height="14" fill="#2A1600"/><rect x="56" y="36" width="10" height="14" fill="#2A1600"/>
+            <rect x="34" y="58" width="32" height="7" fill="#2A1600"/>
+          </g>
+          <g stroke="#FFFFFF" stroke-opacity="0.5" stroke-width="5" stroke-linecap="round"><path d="M120 200 h40"/><path d="M95 178 h50"/><path d="M110 156 h36"/></g>
+        </svg>
+        <span class="tag">인터넷 필요</span>
+      </div>
+      <div class="body">
+        <h2>Geometry Dash</h2>
+        <div class="row"><label>누를 키</label><button class="keychip"></button></div>
+        <button class="start">시작</button>
+      </div>
+    </section>
+
+    <section class="game g-flappy" data-id="flappy">
+      <div class="art fb-art">
+        <div class="fb-sky"></div>
+        <div class="fb-pipe fb-top"><i></i></div>
+        <div class="fb-pipe fb-bottom"><i></i></div>
+        <div class="fb-bird"></div>
+        <div class="fb-land"></div>
+      </div>
+      <div class="body">
+        <h2>Flappy Bird</h2>
+        <div class="row"><label>누를 키</label><button class="keychip"></button></div>
+        <button class="start">시작</button>
+      </div>
+    </section>
+  </main>
+
+  <section class="force">
+    <div class="f-label">지금 힘</div>
+    <div class="meter"><div id="fill" class="fill"></div><div id="tick" class="tick"></div></div>
+    <div id="force" class="f-num">--</div>
+  </section>
+  <div class="esc">게임 중 나가기 <b>Esc</b></div>
+  <footer id="version" class="version"></footer>
+</div>
+<script src="home.js"></script>
+</body>
+</html>

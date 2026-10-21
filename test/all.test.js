@@ -358,6 +358,31 @@ test('프리셋: 3칸, 지금 칸은 지금 설정과 같고, 칸을 바꾸면 �
   assert.strictEqual(normalizeSettings({ presets: [null, 'x', { data: 5 }] }).presets[2].data, null);
 });
 
+test('사용자 모드: 게임 목록, 게임별 키 저장(Esc·없는 키는 기본값), 게임 중 엔진은 1단계 + 게임 방식', () => {
+  const games = require('../src/main/games');
+  assert.deepStrictEqual(games.GAMES.map((g) => g.id), ['gd', 'flappy']);
+  assert.strictEqual(games.gameById('gd').url, 'https://www.geometrydash.com/game/index.html');
+  assert.strictEqual(games.gameById('nope'), null);
+  const s = normalizeSettings({ user: { keys: { gd: 'Escape', flappy: 'MouseLeft' } }, key: { levels: 2, code: 'ArrowLeft', mode: 'tap' }, trigger: { threshold: 12 } });
+  assert.deepStrictEqual(s.user.keys, { gd: 'Space', flappy: 'MouseLeft' });
+  assert.strictEqual(normalizeSettings({ user: { keys: { gd: 'Nope' } } }).user.keys.gd, 'Space');
+  const gd = games.engineConfigFor(games.gameById('gd'), s);
+  assert.deepStrictEqual([gd.levels, gd.mode, gd.code, gd.threshold], [1, 'hold', 'Space', 12]);
+  const fb = games.engineConfigFor(games.gameById('flappy'), s);
+  assert.deepStrictEqual([fb.levels, fb.mode, fb.code], [1, 'tap', 'MouseLeft']);
+  // 사용자 키는 프리셋에 안 담긴다
+  assert.strictEqual(s.presets[0].data.user, undefined);
+});
+
+test('게임 창에 넣을 입력: 키는 Electron keyCode, 마우스 왼·오·가운데는 버튼, 넣을 수 없는 키는 null', () => {
+  assert.deepStrictEqual(keymap.injectOf('Space'), { kind: 'key', keyCode: 'Space' });
+  assert.deepStrictEqual(keymap.injectOf('ArrowUp'), { kind: 'key', keyCode: 'Up' });
+  assert.deepStrictEqual(keymap.injectOf('KeyW'), { kind: 'key', keyCode: 'W' });
+  assert.deepStrictEqual(keymap.injectOf('MouseRight'), { kind: 'mouse', button: 'right' });
+  assert.strictEqual(keymap.injectOf('MouseBack'), null);
+  assert.strictEqual(keymap.injectOf('Numpad1'), null);
+});
+
 // ───────────── 장치 연결 ─────────────
 function encodeFrames(frames) {
   const out = [];

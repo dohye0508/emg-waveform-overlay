@@ -16,6 +16,8 @@ const DEFAULTS = {
   trigger: { threshold: 10, threshold2: 22, releaseRatio: 0.7, windowMs: 50 },
   signal: { channel: 1, mainsHz: 60, notch: true, highpassHz: 80, seconds: 2, scale: 200 },
   overlay: { x: 98, y: 8, scale: 100, opacity: 95, display: 'primary' },
+  // 사용자 모드: 게임마다 누를 키 하나
+  user: { keys: { gd: 'Space', flappy: 'Space' } },
 };
 const OLD_HOTKEYS = { toggle: 'Ctrl+Alt+F9', overlay: 'Ctrl+Alt+F10' };
 const PRESET_COUNT = 3;
@@ -76,6 +78,12 @@ function normalizeCore(raw, version) {
       highpassHz: clampNum(sg.highpassHz, 0, 200, d.signal.highpassHz, 1),
       seconds: clampNum(sg.seconds, 0.5, 5, d.signal.seconds),
       scale: clampNum(sg.scale, 20, 600, d.signal.scale, 1),
+    },
+    user: {
+      keys: Object.fromEntries(Object.keys(d.user.keys).map((g) => {
+        const k = r.user && r.user.keys && r.user.keys[g];
+        return [g, lookup(k) && k !== 'Escape' ? k : d.user.keys[g]];
+      })),
     },
     overlay: {
       x: clampNum(ov.x, 0, 100, d.overlay.x, 1),

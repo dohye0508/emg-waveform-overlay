@@ -4,6 +4,7 @@
 // 상태와 타이밍은 전부 여기에 있고, 화면(렌더러)은 payload 를 그리기만 한다.
 
 const path = require('path');
+const { pathToFileURL } = require('url');
 const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, screen, nativeImage } = require('electron');
 const { HidInput } = require('./hidinput');
 const { EmgWindow } = require('./emg');
@@ -13,6 +14,7 @@ const keymap = require('./keymap');
 const layout = require('./layout');
 const { Store, normalizeSettings, merge } = require('./store');
 const { AutoCal, suggestThreshold } = require('./calib');
+const games = require('./games');
 
 const FRAME_MS = 33;
 const SIGNAL_LOST_MS = 500;
@@ -21,6 +23,8 @@ const COLUMNS = 240;
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 }
+// 게임 소리가 첫 입력 전에도 나오게
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 let store, settings;
 let hidIn, engine, emgWin, ring, cal;
@@ -36,11 +40,16 @@ let lastEmgAt = 0;
 let calSens = 0.35;
 let hotkeyOk = { toggle: true, overlay: true };
 let rmsTimer = null;
+let gameWin = null;
+let activeGame = null; // 사용자 모드에서 하고 있는 게임
+let uiMode = process.argv.includes('--admin') ? 'admin' : 'user';
 
 const now = () => Date.now();
 
-function applyEngine() {
-  engine.configure({
+/** 지금 키 엔진에 줄 설정: 게임 중이면 게임 키 하나, 아니면 관리자 설정 */
+function keyConfig() {
+  if (activeGame) return games.engineConfigFor(activeGame, settings);
+  return {
     threshold: settings.trigger.threshold,
     threshold2: settings.trigger.threshold2,
     releaseRatio: settings.trigger.releaseRatio,
@@ -51,7 +60,11 @@ function applyEngine() {
     decideMs: settings.key.decideMs,
     code: settings.key.code,
     code2: settings.key.code2,
-  });
+  };
+}
+
+function applyEngine() {
+  engine.configure(keyConfig());
   engine.setTest(test);
   engine.setEnabled((running || test) && !cal.running, now());
 }
@@ -107,11 +120,91 @@ function createSettings() {
     webPreferences: { preload: path.join(__dirname, '..', 'preload.js'), contextIsolation: true, sandbox: true },
   });
   settingsWin.setMenu(null);
-  settingsWin.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+  settingsWin.loadFile(pagePath());
   settingsWin.once('ready-to-show', () => { if (!process.argv.includes('--hidden')) settingsWin.show(); });
   settingsWin.on('close', (e) => {
     if (!quitting) { e.preventDefault(); settingsWin.hide(); }
   });
+}
+
+function pagePath() {
+  return path.join(__dirname, '..', 'renderer', uiMode === 'admin' ? 'index.html' : 'home.html');
+}
+
+/** 사용자 화면 ↔ 관리자 화면 (같은 창에서 페이지만 바꾼다) */
+function setMode(m) {
+  uiMode = m === 'admin' ? 'admin' : 'user';
+  if (settingsWin && !settingsWin.isDestroyed()) settingsWin.loadFile(pagePath());
+}
+
+/**
+ * 힘 → 키를 보낸다. 게임 창이 열려 있으면 그 창에 직접 넣는다 (포커스·관리자 권한과 상관없다).
+ * 게임 창에 넣을 수 없는 키(숫자패드, 뒤로·앞으로 버튼)나 게임이 없을 때는 Windows 전체로 보낸다.
+ */
+function sendKey(action, code) {
+  const inj = keymap.injectOf(code);
+  if (gameWin && !gameWin.isDestroyed() && inj) {
+    const wc = gameWin.webContents;
+    if (inj.kind === 'key') {
+      wc.sendInputEvent({ type: action === 'down' ? 'keyDown' : 'keyUp', keyCode: inj.keyCode });
+    } else {
+      const [w, h] = gameWin.getContentSize();
+      wc.sendInputEvent({ type: action === 'down' ? 'mouseDown' : 'mouseUp', x: Math.round(w / 2), y: Math.round(h / 2), button: inj.button, clickCount: 1 });
+    }
+    return;
+  }
+  if (action === 'down') keysender.press(code);
+  else keysender.release(code);
+}
+
+function playGame(id) {
+  const game = games.gameById(id);
+  if (!game) return;
+  const old = gameWin;
+  gameWin = null;
+  if (old && !old.isDestroyed()) old.close();
+  activeGame = game;
+  const disp = settingsWin ? screen.getDisplayMatching(settingsWin.getBounds()) : screen.getPrimaryDisplay();
+  console.log('[game] 시작', id);
+  const win = new BrowserWindow({
+    ...disp.bounds, show: false, fullscreen: true, autoHideMenuBar: true, backgroundColor: '#000000', title: game.name,
+    // 게임 페이지(외부 사이트 포함)에는 앱 기능을 주지 않는다
+    webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false },
+  });
+  gameWin = win;
+  win.setMenu(null);
+  const wc = win.webContents;
+  wc.setWindowOpenHandler(() => ({ action: 'deny' }));
+  // 게임 페이지 밖(사이트의 다른 페이지 등)으로는 넘어가지 않는다
+  const allowed = game.url ? game.url.replace(/[^/]*$/, '') : 'file:';
+  wc.on('will-navigate', (e, url) => { if (!url.startsWith(allowed)) e.preventDefault(); });
+  wc.on('before-input-event', (e, input) => {
+    if (input.type === 'keyDown' && input.key === 'Escape') { e.preventDefault(); stopGame(); }
+  });
+  // 작은 화면용으로 만든 게임(floppybird 는 날 수 있는 칸이 420px)은 화면 높이에 맞춰 확대한다
+  if (game.fitHeight) wc.on('did-finish-load', () => { if (!win.isDestroyed()) wc.setZoomFactor(Math.max(1, win.getContentSize()[1] / game.fitHeight)); });
+  win.once('ready-to-show', () => { win.show(); win.focus(); });
+  // 게임 창에 포커스가 없어도 Esc 로 나갈 수 있게 게임 중에만 전역으로 잡는다
+  try { if (!globalShortcut.isRegistered('Escape')) globalShortcut.register('Escape', stopGame); } catch (_) { /* ignore */ }
+  win.on('closed', () => {
+    // 다른 게임으로 바꾸며 닫은 옛 창이면 새 게임 상태를 건드리지 않는다
+    if (gameWin !== win) return;
+    console.log('[game] 끝', id);
+    try { globalShortcut.unregister('Escape'); } catch (_) { /* ignore */ }
+    gameWin = null;
+    activeGame = null;
+    setRunning(false);
+    showSettings();
+  });
+  if (game.url) win.loadURL(game.url);
+  // floppybird 는 주소 끝이 정확히 '?easy' 여야 쉬운 모드라서 loadFile 의 query(→ '?easy=') 대신 주소를 직접 만든다
+  else win.loadURL(pathToFileURL(path.join(__dirname, '..', 'renderer', game.file)).href + (game.search || ''));
+  engine.releaseAll();
+  setRunning(true);
+}
+
+function stopGame() {
+  if (gameWin && !gameWin.isDestroyed()) gameWin.close();
 }
 
 function showSettings() {
@@ -154,7 +247,8 @@ function refreshTray() {
   if (!tray) return;
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: running ? '가동 정지' : '가동 시작', click: () => setRunning(!running) },
-    { label: '설정 열기', click: showSettings },
+    { label: '사용자 화면', click: () => { setMode('user'); showSettings(); } },
+    { label: '관리자 화면', click: () => { setMode('admin'); showSettings(); } },
     { type: 'separator' },
     { label: '종료', click: () => app.quit() },
   ]));
@@ -228,6 +322,9 @@ function payload() {
     keys: { available: keysender.available, error: keysender.error, label: keymap.label(settings.key.code), label2: keymap.label(settings.key.code2) },
     presets: settings.presets.map((p, i) => ({ index: i, used: !!p.data, label: presetLabel(p.data) })),
     activePreset: settings.activePreset,
+    uiMode,
+    activeGame: activeGame ? activeGame.id : null,
+    games: games.GAMES.map((g) => ({ id: g.id, name: g.name, online: g.online, key: settings.user.keys[g.id], label: keymap.label(settings.user.keys[g.id]) })),
     displays: screen.getAllDisplays().map((d, i) => ({ index: i, label: (d.label || '모니터') + ' ' + d.size.width + '×' + d.size.height, primary: d.id === screen.getPrimaryDisplay().id })),
   };
 }
@@ -252,13 +349,14 @@ function selectPreset(i) {
 
 function overlayFrame() {
   const sg = settings.signal;
+  const kc = keyConfig();
   const n = Math.max(1, Math.round(sg.seconds * rate));
   return {
     env: Array.from(ring.envelope(n, COLUMNS)),
     rms, threshold: settings.trigger.threshold, release: settings.trigger.threshold * settings.trigger.releaseRatio,
-    threshold2: settings.trigger.threshold2, levels: settings.key.levels, level: engine.level,
+    threshold2: settings.trigger.threshold2, levels: kc.levels, level: engine.level,
     range: sg.scale, active: engine.active, pressed: engine.pressed, pressedLevel: engine.pressedLevel,
-    keyLabel: keymap.label(settings.key.code), keyLabel2: keymap.label(settings.key.code2),
+    keyLabel: keymap.label(kc.code), keyLabel2: keymap.label(kc.code2),
     connected: deviceStatus(now()).connected, test, drag: dragMode,
   };
 }
@@ -322,6 +420,9 @@ function wireIpc() {
   ipcMain.handle('test:set', (_e, on) => { test = !!on; applyEngine(); updateOverlayVisibility(); return payload(); });
   ipcMain.handle('drag:set', (_e, on) => { if (on) startDrag(); else finishDrag(); return payload(); });
   ipcMain.handle('key:test', () => { keyTest(); return true; });
+  ipcMain.handle('ui:mode', (_e, m) => { setMode(m); return true; });
+  ipcMain.handle('game:play', (_e, id) => { playGame(String(id)); return true; });
+  ipcMain.handle('game:stop', () => { stopGame(); return true; });
   ipcMain.handle('preset:select', (_e, i) => { selectPreset(Number(i)); return payload(); });
   ipcMain.handle('device:reconnect', () => { hidIn.reconnect(); return true; });
   ipcMain.handle('cal:start', () => {
@@ -368,7 +469,7 @@ app.whenReady().then(() => {
   emgWin = new EmgWindow();
   cal = new AutoCal();
   engine = new KeyEngine({
-    send: (action, code) => { if (action === 'down') keysender.press(code); else keysender.release(code); },
+    send: sendKey,
   });
   hidIn = new HidInput({ getSettings: () => settings });
   const onEmg = (values, r) => {

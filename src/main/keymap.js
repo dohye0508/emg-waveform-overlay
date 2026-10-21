@@ -131,4 +131,15 @@ function acceleratorLabel(s) {
   return String(s || '').split('+').join(' + ');
 }
 
-module.exports = { MOUSE_BY_BUTTON, lookup, label, acceleratorFromEvent, normalizeAccelerator, acceleratorLabel, MODIFIER_CODES };
+/**
+ * 앱 안의 게임 창에 직접 넣을 입력 (Electron sendInputEvent 모양).
+ * 키는 { kind: 'key', keyCode }, 마우스는 { kind: 'mouse', button }. 넣을 수 없는 키(숫자패드, 뒤로·앞으로 버튼 등)는 null.
+ */
+const INJECT_MOUSE = { MouseLeft: 'left', MouseRight: 'right', MouseMiddle: 'middle' };
+function injectOf(code) {
+  if (INJECT_MOUSE[code]) return { kind: 'mouse', button: INJECT_MOUSE[code] };
+  const k = accelKey(code);
+  return k ? { kind: 'key', keyCode: k } : null;
+}
+
+module.exports = { MOUSE_BY_BUTTON, injectOf, lookup, label, acceleratorFromEvent, normalizeAccelerator, acceleratorLabel, MODIFIER_CODES };

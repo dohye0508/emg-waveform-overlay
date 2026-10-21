@@ -1,0 +1,62 @@
+/* 사용자 화면. 1440×900 설계, 관리자 화면과 같은 색·글꼴 */
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; color: var(--text); font-family: var(--font-ui); font-weight: 500; user-select: none;
+  background: radial-gradient(1100px 600px at 50% -10%, #1B2442 0%, transparent 65%), var(--bg); }
+#app { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; transform-origin: 0 0; padding: 28px 56px; display: flex; flex-direction: column; gap: 26px; }
+button { font: inherit; color: inherit; }
+
+header { display: flex; align-items: center; height: 72px; flex: none; }
+h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 46px; white-space: nowrap; }
+.pill { margin-left: auto; display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 20px; border-radius: 23px; background: var(--inset); border: 1px solid var(--line); font-size: 20px; font-weight: 700; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pill .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--dim); }
+.pill.ok { color: var(--text); }
+.pill.ok .dot { background: var(--mint); box-shadow: 0 0 10px var(--mint); }
+
+main { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; height: 560px; flex: none; }
+.game { --accent: var(--amber); display: flex; flex-direction: column; min-width: 0; border-radius: 26px; overflow: hidden; background: var(--surface); border: 1px solid var(--line);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35); transition: transform 120ms, border-color 120ms; }
+.game:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+.g-gd { --accent: var(--amber); }
+.g-flappy { --accent: var(--mint); }
+.art { position: relative; height: 290px; flex: none; }
+.art svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.tag { position: absolute; right: 16px; top: 16px; height: 32px; line-height: 32px; padding: 0 14px; border-radius: 16px; background: rgba(10, 14, 30, 0.6); color: #DDE6FF; font-size: 15px; font-weight: 700; }
+.body { flex: 1 1 auto; padding: 22px 30px 28px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+h2 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 40px; line-height: 1.1; white-space: nowrap; }
+.row { display: flex; align-items: center; gap: 16px; height: 48px; }
+.row label { width: 96px; flex: none; font-size: 20px; font-weight: 700; color: var(--sub); white-space: nowrap; }
+.keychip { flex: 1 1 0; min-width: 0; height: 48px; border-radius: 12px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 16px;
+  background: var(--inset); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-bottom-width: 4px; color: var(--accent); font-size: 22px; font-weight: 700; letter-spacing: 0.4px; }
+.keychip:hover { background: color-mix(in srgb, var(--accent) 10%, var(--inset)); }
+.keychip.listen { background: color-mix(in srgb, var(--accent) 24%, transparent); color: var(--text); }
+.keychip.bad { border-color: var(--coral); color: var(--coral); }
+.start { margin-top: auto; height: 76px; white-space: nowrap; border: 0; border-radius: 18px; cursor: pointer; font-family: var(--font-title); font-size: 34px; color: #1A1408;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 100%, #fff 18%) 0%, var(--accent) 100%); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 30%, transparent); }
+.start:hover { filter: brightness(1.06); }
+.start:active { transform: translateY(2px); }
+
+.force { display: flex; align-items: center; gap: 22px; height: 104px; flex: none; padding: 0 30px; border-radius: 22px; background: var(--surface); border: 1px solid var(--line); }
+.f-label { font-family: var(--font-title); font-size: 28px; white-space: nowrap; flex: none; }
+.meter { position: relative; flex: 1 1 0; height: 26px; border-radius: 13px; background: var(--inset); border: 1px solid var(--line); }
+.fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 13px; background: linear-gradient(90deg, #5E8FD6, var(--sky)); transition: width 60ms linear; }
+.meter.on .fill { background: linear-gradient(90deg, var(--sky), var(--coral)); box-shadow: 0 0 16px rgba(255, 143, 143, 0.6); }
+.tick { position: absolute; top: -8px; bottom: -8px; left: 50%; width: 4px; margin-left: -2px; border-radius: 2px; background: var(--amber); }
+.f-num { width: 120px; flex: none; text-align: right; font-size: 46px; font-weight: 700; color: var(--sky); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.f-num.on { color: var(--coral); }
+.f-num.off { color: var(--dim); }
+.esc { position: absolute; left: 56px; bottom: 10px; font-size: 15px; font-weight: 700; color: var(--dim); }
+.esc b { display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--line); border-bottom-width: 3px; color: var(--sub); }
+.version { position: absolute; right: 56px; bottom: 12px; font-size: 13px; font-weight: 700; color: var(--dim); }
+
+/* Flappy Bird 카드: 게임(floppybird)의 그림을 그대로 2~3배로 키워 쓴다 */
+.fb-art { background: #4EC0CA; overflow: hidden; image-rendering: pixelated; }
+.fb-art > * { position: absolute; image-rendering: pixelated; }
+.fb-sky { left: 0; right: 0; bottom: 56px; height: 218px; background: url('games/flappy/assets/sky.png') repeat-x left bottom / 552px 218px; }
+.fb-land { left: 0; right: 0; bottom: 0; height: 56px; background: url('games/flappy/assets/land.png') repeat-x left top / 672px 224px; }
+.fb-pipe { left: 400px; width: 104px; background: url('games/flappy/assets/pipe.png') repeat-y center / 104px 2px; }
+.fb-pipe i { position: absolute; left: 0; width: 104px; height: 52px; }
+.fb-top { top: 0; height: 92px; }
+.fb-top i { bottom: 0; background: url('games/flappy/assets/pipe-down.png') no-repeat center / 104px 52px; }
+.fb-bottom { bottom: 56px; height: 76px; }
+.fb-bottom i { top: 0; background: url('games/flappy/assets/pipe-up.png') no-repeat center / 104px 52px; }
+.fb-bird { left: 210px; top: 108px; width: 102px; height: 72px; background: url('games/flappy/assets/bird.png') no-repeat 0 0 / 102px 288px; transform: rotate(-14deg); }
