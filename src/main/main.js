@@ -182,7 +182,11 @@ function playGame(id) {
     if (input.type === 'keyDown' && input.key === 'Escape') { e.preventDefault(); stopGame(); }
   });
   // 작은 화면용으로 만든 게임(floppybird 는 날 수 있는 칸이 420px)은 화면 높이에 맞춰 확대한다
-  if (game.fitHeight) wc.on('did-finish-load', () => { if (!win.isDestroyed()) wc.setZoomFactor(Math.max(1, win.getContentSize()[1] / game.fitHeight)); });
+  wc.on('did-finish-load', () => {
+    if (win.isDestroyed()) return;
+    if (game.fitHeight) wc.setZoomFactor(Math.max(1, win.getContentSize()[1] / game.fitHeight));
+    if (game.css) wc.insertCSS(game.css);
+  });
   win.once('ready-to-show', () => { win.show(); win.focus(); });
   // 게임 창에 포커스가 없어도 Esc 로 나갈 수 있게 게임 중에만 전역으로 잡는다
   try { if (!globalShortcut.isRegistered('Escape')) globalShortcut.register('Escape', stopGame); } catch (_) { /* ignore */ }

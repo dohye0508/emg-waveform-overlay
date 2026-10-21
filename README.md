@@ -7,7 +7,7 @@ SpikerBox Pro(근전도)의 신호를 게임 화면 위에 파형으로 띄우�
 - `Geometry Dash`와 `Flappy Bird` 중 하나를 골라 `시작`을 누르면 전체화면으로 게임이 뜨고, 힘을 주면 정한 키가 그 게임에 바로 들어갑니다.
 - 게임마다 `누를 키`를 정할 수 있습니다(키보드 키나 마우스 클릭).
 - 게임 중 `Esc`를 누르면 이 화면으로 돌아옵니다.
-- Geometry Dash는 RobTop Games의 공식 웹 데모(1단계)를 띄우므로 인터넷이 필요합니다. Flappy Bird는 오픈소스 클론 [nebez/floppybird](https://github.com/nebez/floppybird)(Apache-2.0)를 앱에 넣은 것이라 오프라인에서도 되고, 파이프 틈이 넓은 쉬운 모드로 엽니다. 출처와 고친 곳은 `src/renderer/games/flappy/SOURCE.md`에 있습니다.
+- Geometry Dash는 RobTop Games의 공식 웹 데모(1단계)를 띄웁니다. Flappy Bird는 오픈소스 클론 [nebez/floppybird](https://github.com/nebez/floppybird)(Apache-2.0)를 앱에 넣은 것이라 오프라인에서도 되고, 파이프 틈이 넓은 쉬운 모드로 엽니다. 출처와 고친 곳은 `src/renderer/games/flappy/SOURCE.md`에 있습니다.
 - `Ctrl+D`를 누르면 관리자 화면(아래 설명)으로 가고, 거기서 다시 `Ctrl+D`를 누르면 돌아옵니다. 트레이 메뉴에서도 바꿀 수 있습니다.
 
 ## 관리자 화면 사용

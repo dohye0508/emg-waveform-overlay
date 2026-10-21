@@ -7,7 +7,21 @@
 
 const GAMES = [
   { id: 'gd', name: 'Geometry Dash', url: 'https://www.geometrydash.com/game/index.html', mode: 'hold', defaultKey: 'Space', online: true },
-  { id: 'flappy', name: 'Flappy Bird', file: 'games/flappy/index.html', search: '?easy', fitHeight: 600, mode: 'tap', defaultKey: 'Space', online: false },
+  { id: 'flappy', name: 'Flappy Bird', file: 'games/flappy/index.html', search: '?easy', fitHeight: 470,
+    // 원래 휴대폰(가로 320px) 화면용 게임이라 가운데 480px 칸에서만 돌리고 양옆은 비운다.
+    // 파이프는 원래 x=900 에서 출발하므로 칸 오른쪽(500)에서 출발하게 고치고, 속도(1000px/7.5초)는 그대로 둔다.
+    // 시작·점수 화면은 320px 기준 위치라 480px 가운데로 옮긴다(+80px).
+    css: [
+      'html, body { background: #0E1220 !important; }',
+      '#gamecontainer { width: 480px !important; margin: 0 auto !important; overflow: hidden !important; box-shadow: 0 0 60px rgba(0,0,0,0.7); }',
+      // 같은 이름(animPipe)으로 덮으면 원래 것이 이겨서 새 이름을 쓴다
+      '@keyframes animPipeNarrow { 0% { left: 500px; } 100% { left: -100px; } }',
+      '.pipe { -webkit-animation: animPipeNarrow 4500ms linear !important; animation: animPipeNarrow 4500ms linear !important; }',
+      // 만든 사람 표시는 남기되 왼쪽 빈 칸 안에 두고 작게
+      '#footer { max-width: 160px; font-size: 10px; line-height: 14px; opacity: 0.6; }',
+      '#splash { left: 145px !important; } #scoreboard { left: 123px !important; } #bigscore { left: 230px !important; }',
+    ].join(' '),
+    mode: 'tap', defaultKey: 'Space', online: false },
 ];
 
 // 게임 안에서 나가기(Esc)와 겹치는 키는 고를 수 없다
