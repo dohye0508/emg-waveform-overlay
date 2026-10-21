@@ -17,7 +17,7 @@ const DEFAULTS = {
   signal: { channel: 1, mainsHz: 60, notch: true, highpassHz: 80, seconds: 2, scale: 200 },
   overlay: { x: 98, y: 8, scale: 100, opacity: 95, display: 'primary' },
   // 사용자 모드: 게임마다 누를 키 하나
-  user: { keys: { gd: 'Space', flappy: 'Space' } },
+  user: { keys: { gd: 'Space', flappy: 'Space', adofai: 'Space' } },
 };
 const OLD_HOTKEYS = { toggle: 'Ctrl+Alt+F9', overlay: 'Ctrl+Alt+F10' };
 const PRESET_COUNT = 3;

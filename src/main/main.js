@@ -5,7 +5,7 @@
 
 const path = require('path');
 const { pathToFileURL } = require('url');
-const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, screen, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, screen, nativeImage, shell } = require('electron');
 const { HidInput } = require('./hidinput');
 const { EmgWindow } = require('./emg');
 const { KeyEngine } = require('./engine');
@@ -15,6 +15,7 @@ const layout = require('./layout');
 const { Store, normalizeSettings, merge } = require('./store');
 const { AutoCal, suggestThreshold } = require('./calib');
 const games = require('./games');
+const winfocus = require('./winfocus');
 
 const FRAME_MS = 33;
 const SIGNAL_LOST_MS = 500;
@@ -42,6 +43,8 @@ let hotkeyOk = { toggle: true, overlay: true };
 let rmsTimer = null;
 let gameWin = null;
 let activeGame = null; // 사용자 모드에서 하고 있는 게임
+let nativeState = {}; // Windows 게임(얼불춤 등)의 상태: { [id]: 'off' | 'launching' | 'on' }
+let nativeWait = null; // 실행을 기다리는 타이머
 let uiMode = process.argv.includes('--admin') ? 'admin' : 'user';
 
 const now = () => Date.now();
@@ -169,9 +172,67 @@ function zoomFor(win, fitHeight) {
   return Math.max(0.5, k / sf);
 }
 
+/** 사용자 화면을 다시 맨 앞으로 (다른 프로그램 위로) */
+function bringHome() {
+  if (!settingsWin || settingsWin.isDestroyed()) return;
+  settingsWin.show();
+  settingsWin.setAlwaysOnTop(true);
+  settingsWin.focus();
+  setTimeout(() => { if (!settingsWin.isDestroyed()) settingsWin.setAlwaysOnTop(false); }, 300);
+}
+
+/**
+ * Windows 게임 창이 뜰 때까지 기다렸다가 onReady(창) 를 부른다. 꺼져 있으면 Steam 으로 켠다.
+ * 90초 안에 안 뜨면 포기한다.
+ */
+function waitNative(game, onReady) {
+  clearInterval(nativeWait);
+  const now0 = Date.now();
+  let h = winfocus.find(game.windowTitle);
+  if (h) { nativeState[game.id] = 'on'; onReady(h); return; }
+  nativeState[game.id] = 'launching';
+  shell.openExternal(game.launchUrl);
+  nativeWait = setInterval(() => {
+    h = winfocus.find(game.windowTitle);
+    if (h) {
+      clearInterval(nativeWait);
+      nativeWait = null;
+      nativeState[game.id] = 'on';
+      // 창이 막 떴을 때는 아직 그리는 중이라 조금 기다렸다 쓴다
+      setTimeout(() => onReady(winfocus.find(game.windowTitle) || h), 1500);
+    } else if (Date.now() - now0 > 90000) {
+      clearInterval(nativeWait);
+      nativeWait = null;
+      nativeState[game.id] = 'off';
+      if (activeGame === game) stopGame();
+    }
+  }, 500);
+}
+
+/** 얼불춤처럼 앱 밖의 Windows 게임: 창을 앞으로 가져오고 SendInput 으로 키를 보낸다 */
+function playNative(game) {
+  activeGame = game;
+  try { globalShortcut.register(game.exitAccel, stopGame); } catch (_) { /* ignore */ }
+  console.log('[game] 시작', game.id);
+  engine.releaseAll();
+  waitNative(game, (h) => {
+    if (activeGame !== game) return;
+    winfocus.focus(h);
+    setRunning(true);
+  });
+}
+
+/** 미리 켜 두기: 게임을 켜고, 창이 뜨면 사용자 화면을 다시 앞으로 */
+function prelaunchGame(id) {
+  const game = games.gameById(id);
+  if (!game || !game.native || activeGame) return;
+  waitNative(game, () => { if (!activeGame) bringHome(); });
+}
+
 function playGame(id) {
   const game = games.gameById(id);
   if (!game) return;
+  if (game.native) { playNative(game); return; }
   const old = gameWin;
   gameWin = null;
   if (old && !old.isDestroyed()) old.close();
@@ -220,6 +281,19 @@ function playGame(id) {
 }
 
 function stopGame() {
+  if (activeGame && activeGame.native) {
+    // Windows 게임은 끄지 않고 뒤에 둔다 (다음 사람이 바로 시작)
+    const game = activeGame;
+    try { globalShortcut.unregister(game.exitAccel); } catch (_) { /* ignore */ }
+    clearInterval(nativeWait);
+    nativeWait = null;
+    if (nativeState[game.id] === 'launching') nativeState[game.id] = 'off';
+    console.log('[game] 끝', game.id);
+    activeGame = null;
+    setRunning(false);
+    bringHome();
+    return;
+  }
   if (gameWin && !gameWin.isDestroyed()) gameWin.close();
 }
 
@@ -340,7 +414,11 @@ function payload() {
     activePreset: settings.activePreset,
     uiMode,
     activeGame: activeGame ? activeGame.id : null,
-    games: games.GAMES.map((g) => ({ id: g.id, name: g.name, online: g.online, key: settings.user.keys[g.id], label: keymap.label(settings.user.keys[g.id]) })),
+    games: games.GAMES.map((g) => ({
+      id: g.id, name: g.name, online: g.online, native: !!g.native, exitAccel: g.exitAccel || 'Esc',
+      state: g.native ? nativeState[g.id] || 'off' : null,
+      key: settings.user.keys[g.id], label: keymap.label(settings.user.keys[g.id]),
+    })),
     displays: screen.getAllDisplays().map((d, i) => ({ index: i, label: (d.label || '모니터') + ' ' + d.size.width + '×' + d.size.height, primary: d.id === screen.getPrimaryDisplay().id })),
   };
 }
@@ -439,6 +517,7 @@ function wireIpc() {
   ipcMain.handle('ui:mode', (_e, m) => { setMode(m); return true; });
   ipcMain.handle('game:play', (_e, id) => { playGame(String(id)); return true; });
   ipcMain.handle('game:stop', () => { stopGame(); return true; });
+  ipcMain.handle('game:prelaunch', (_e, id) => { prelaunchGame(String(id)); return true; });
   ipcMain.handle('preset:select', (_e, i) => { selectPreset(Number(i)); return payload(); });
   ipcMain.handle('device:reconnect', () => { hidIn.reconnect(); return true; });
   ipcMain.handle('cal:start', () => {
@@ -523,6 +602,15 @@ app.whenReady().then(() => {
     if (cal.running && cal.tick(now(), settings.signal)) applyEngine();
   }, 100);
   setInterval(pushFrames, FRAME_MS);
+  // Windows 게임이 켜져 있는지 1초마다 본다. 하는 중에 게임이 꺼지면 사용자 화면으로 돌아온다
+  setInterval(() => {
+    for (const g of games.GAMES) {
+      if (!g.native || nativeState[g.id] === 'launching') continue;
+      const on = winfocus.exists(g.windowTitle);
+      nativeState[g.id] = on ? 'on' : 'off';
+      if (!on && activeGame === g) stopGame();
+    }
+  }, 1000);
 
   screen.on('display-metrics-changed', placeOverlay);
   screen.on('display-added', placeOverlay);

@@ -23,6 +23,11 @@ const GAMES = [
       '#splash { left: 145px !important; } #scoreboard { left: 123px !important; } #bigscore { left: 230px !important; }',
     ].join(' '),
     mode: 'tap', defaultKey: 'Space', online: false },
+  // 얼음과 불의 춤: Steam 에 깔린 Windows 게임. 미리 켜 두면 시작할 때 그 창을 앞으로 가져오기만 한다.
+  // 게임이 Esc 를 일시정지로 쓰므로 사용자 화면으로 돌아오는 키는 Ctrl+Q. 돌아와도 게임은 끄지 않는다.
+  // 박자마다 한 번씩 누르는 게임이라 '한 번만'(tap). 키는 Windows 입력(SendInput)으로 앞에 있는 게임 창에 간다.
+  { id: 'adofai', name: '얼음과 불의 춤', native: true, windowTitle: 'A Dance of Fire and Ice', launchUrl: 'steam://rungameid/977950',
+    exitAccel: 'Ctrl+Q', mode: 'tap', defaultKey: 'Space', online: false },
 ];
 
 // 게임 안에서 나가기(Esc)와 겹치는 키는 고를 수 없다

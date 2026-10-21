@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('api', {
   setMode: (m) => ipcRenderer.invoke('ui:mode', m),
   playGame: (id) => ipcRenderer.invoke('game:play', id),
   stopGame: () => ipcRenderer.invoke('game:stop'),
+  prelaunchGame: (id) => ipcRenderer.invoke('game:prelaunch', id),
   reconnect: () => ipcRenderer.invoke('device:reconnect'),
   calStart: () => ipcRenderer.invoke('cal:start'),
   calCancel: () => ipcRenderer.invoke('cal:cancel'),

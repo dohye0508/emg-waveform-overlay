@@ -70,6 +70,20 @@ document.querySelectorAll('.game').forEach((card) => {
   const id = card.dataset.id;
   keyCapture($('.keychip', card), id);
   $('.start', card).addEventListener('click', () => window.api.playGame(id));
+  // Windows 게임(얼불춤): 켜져 있는지 표시, 꺼져 있으면 미리 켜기
+  const pre = $('.prelaunch', card);
+  const st = $('.tag.state', card);
+  if (pre) pre.addEventListener('click', (e) => { e.stopPropagation(); window.api.prelaunchGame(id); });
+  if (st) {
+    syncers.push(() => {
+      const g = S.games.find((x) => x.id === id);
+      const state = g ? g.state : 'off';
+      pre.hidden = state !== 'off';
+      st.hidden = state === 'off';
+      st.textContent = state === 'on' ? '켜져 있음' : '켜는 중…';
+      st.className = 'tag state ' + (state === 'on' ? 'on' : 'wait');
+    });
+  }
 });
 
 let shown = 0;

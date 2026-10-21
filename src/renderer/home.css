@@ -12,20 +12,21 @@ h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 46p
 .pill.ok { color: var(--text); }
 .pill.ok .dot { background: var(--mint); box-shadow: 0 0 10px var(--mint); }
 
-main { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; height: 560px; flex: none; }
+main { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; height: 560px; flex: none; }
 .game { --accent: var(--amber); display: flex; flex-direction: column; min-width: 0; border-radius: 26px; overflow: hidden; background: var(--surface); border: 1px solid var(--line);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35); transition: transform 120ms, border-color 120ms; }
 .game:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
 .g-gd { --accent: var(--amber); }
 .g-flappy { --accent: var(--mint); }
-.art { position: relative; height: 290px; flex: none; }
+.g-adofai { --accent: var(--violet); }
+.art { position: relative; height: 0; padding-bottom: 56.25%; flex: none; } /* 16:9, 카드 그림(1200×675, 1000×562)이 잘리지 않게 */
 .art svg, .art .cover { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .art .cover { object-fit: cover; object-position: center 40%; }
 .tag { position: absolute; right: 16px; top: 16px; height: 32px; line-height: 32px; padding: 0 14px; border-radius: 16px; background: rgba(10, 14, 30, 0.6); color: #DDE6FF; font-size: 15px; font-weight: 700; }
-.body { flex: 1 1 auto; padding: 22px 30px 28px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
-h2 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 40px; line-height: 1.1; white-space: nowrap; }
+.body { flex: 1 1 auto; padding: 22px 26px 26px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+h2 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 36px; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; white-space: nowrap; }
 .row { display: flex; align-items: center; gap: 16px; height: 48px; }
-.row label { width: 96px; flex: none; font-size: 20px; font-weight: 700; color: var(--sub); white-space: nowrap; }
+.row label { width: 84px; flex: none; font-size: 20px; font-weight: 700; color: var(--sub); white-space: nowrap; }
 .keychip { flex: 1 1 0; min-width: 0; height: 48px; border-radius: 12px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 16px;
   background: var(--inset); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-bottom-width: 4px; color: var(--accent); font-size: 22px; font-weight: 700; letter-spacing: 0.4px; }
 .keychip:hover { background: color-mix(in srgb, var(--accent) 10%, var(--inset)); }
@@ -54,10 +55,16 @@ h2 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 40p
 .fb-art > * { position: absolute; image-rendering: pixelated; }
 .fb-sky { left: 0; right: 0; bottom: 56px; height: 218px; background: url('games/flappy/assets/sky.png') repeat-x left bottom / 552px 218px; }
 .fb-land { left: 0; right: 0; bottom: 0; height: 56px; background: url('games/flappy/assets/land.png') repeat-x left top / 672px 224px; }
-.fb-pipe { left: 400px; width: 104px; background: url('games/flappy/assets/pipe.png') repeat-y center / 104px 2px; }
+.fb-pipe { left: 66%; width: 104px; background: url('games/flappy/assets/pipe.png') repeat-y center / 104px 2px; }
 .fb-pipe i { position: absolute; left: 0; width: 104px; height: 52px; }
-.fb-top { top: 0; height: 92px; }
+.fb-top { top: 0; height: 64px; }
 .fb-top i { bottom: 0; background: url('games/flappy/assets/pipe-down.png') no-repeat center / 104px 52px; }
-.fb-bottom { bottom: 56px; height: 76px; }
+.fb-bottom { bottom: 56px; height: 52px; }
 .fb-bottom i { top: 0; background: url('games/flappy/assets/pipe-up.png') no-repeat center / 104px 52px; }
-.fb-bird { left: 210px; top: 108px; width: 102px; height: 72px; background: url('games/flappy/assets/bird.png') no-repeat 0 0 / 102px 288px; transform: rotate(-14deg); }
+.fb-bird { left: 28%; top: 72px; width: 102px; height: 72px; background: url('games/flappy/assets/bird.png') no-repeat 0 0 / 102px 288px; transform: rotate(-14deg); }
+
+/* 얼음과 불의 춤: 켜져 있는지 표시, 꺼져 있으면 미리 켜기 */
+button.tag { border: 0; cursor: pointer; font: inherit; font-size: 15px; font-weight: 700; color: #120E2A; background: var(--violet); }
+button.tag:hover { filter: brightness(1.08); }
+.tag.state.on { background: rgba(10, 40, 30, 0.75); color: var(--mint); }
+.tag.state.wait { background: rgba(10, 14, 30, 0.7); color: var(--amber); }

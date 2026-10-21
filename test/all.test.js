@@ -360,11 +360,13 @@ test('프리셋: 3칸, 지금 칸은 지금 설정과 같고, 칸을 바꾸면 �
 
 test('사용자 모드: 게임 목록, 게임별 키 저장(Esc·없는 키는 기본값), 게임 중 엔진은 1단계 + 게임 방식', () => {
   const games = require('../src/main/games');
-  assert.deepStrictEqual(games.GAMES.map((g) => g.id), ['gd', 'flappy']);
+  assert.deepStrictEqual(games.GAMES.map((g) => g.id), ['gd', 'flappy', 'adofai']);
+  const ad = games.gameById('adofai');
+  assert.deepStrictEqual([ad.native, ad.windowTitle, ad.launchUrl, ad.exitAccel, ad.mode], [true, 'A Dance of Fire and Ice', 'steam://rungameid/977950', 'Ctrl+Q', 'tap']);
   assert.strictEqual(games.gameById('gd').url, 'https://www.geometrydash.com/game/index.html');
   assert.strictEqual(games.gameById('nope'), null);
   const s = normalizeSettings({ user: { keys: { gd: 'Escape', flappy: 'MouseLeft' } }, key: { levels: 2, code: 'ArrowLeft', mode: 'tap' }, trigger: { threshold: 12 } });
-  assert.deepStrictEqual(s.user.keys, { gd: 'Space', flappy: 'MouseLeft' });
+  assert.deepStrictEqual(s.user.keys, { gd: 'Space', flappy: 'MouseLeft', adofai: 'Space' });
   assert.strictEqual(normalizeSettings({ user: { keys: { gd: 'Nope' } } }).user.keys.gd, 'Space');
   const gd = games.engineConfigFor(games.gameById('gd'), s);
   assert.deepStrictEqual([gd.levels, gd.mode, gd.code, gd.threshold], [1, 'hold', 'Space', 12]);
