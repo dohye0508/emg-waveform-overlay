@@ -188,18 +188,19 @@ function gameloop() {
    //determine the bounding box of the next pipes inner area
    var nextpipe = pipes[0];
    var nextpipeupper = nextpipe.children(".pipe_upper");
+   var nextgap = nextpipe.data('gap') || pipeheight; //EMG Overlay: each pipe keeps its own gap
 
    var pipetop = nextpipeupper.offset().top + nextpipeupper.height();
    var pipeleft = nextpipeupper.offset().left - 2; // for some reason it starts at the inner pipes offset, not the outer pipes.
    var piperight = pipeleft + pipewidth;
-   var pipebottom = pipetop + pipeheight;
+   var pipebottom = pipetop + nextgap;
 
    if(debugmode)
    {
       var boundingbox = $("#pipebox");
       boundingbox.css('left', pipeleft);
       boundingbox.css('top', pipetop);
-      boundingbox.css('height', pipeheight);
+      boundingbox.css('height', nextgap);
       boundingbox.css('width', pipewidth);
    }
 
@@ -442,17 +443,28 @@ function playerScore()
    setBigScore();
 }
 
+//EMG Overlay: pipe gap by score (200 → -3 per point → 120 in easy mode)
+var GAP_STEP = 3;
+var GAP_MIN = 120;
+function gapForScore(s)
+{
+   return Math.max(Math.min(pipeheight, GAP_MIN), pipeheight - s * GAP_STEP);
+}
+
 function updatePipes()
 {
    //Do any pipes need removal?
    $(".pipe").filter(function() { return $(this).position().left <= -100; }).remove()
 
-   //add a new pipe (top height + bottom height  + pipeheight == flyArea) and put it in our tracker
+   //add a new pipe (top height + bottom height  + gap == flyArea) and put it in our tracker
+   //EMG Overlay: the gap starts at pipeheight and narrows by GAP_STEP per point down to GAP_MIN
+   var gap = gapForScore(score);
    var padding = 80;
-   var constraint = flyArea - pipeheight - (padding * 2); //double padding (for top and bottom)
+   var constraint = flyArea - gap - (padding * 2); //double padding (for top and bottom)
    var topheight = Math.floor((Math.random()*constraint) + padding); //add lower padding
-   var bottomheight = (flyArea - pipeheight) - topheight;
+   var bottomheight = (flyArea - gap) - topheight;
    var newpipe = $('<div class="pipe animated"><div class="pipe_upper" style="height: ' + topheight + 'px;"></div><div class="pipe_lower" style="height: ' + bottomheight + 'px;"></div></div>');
+   newpipe.data('gap', gap);
    $("#flyarea").append(newpipe);
    pipes.push(newpipe);
 }
