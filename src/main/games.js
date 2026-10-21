@@ -32,6 +32,8 @@ const GAMES = [
   // 화면이 800×600 고정이라 높이에 맞춰 확대한다 (페이지가 가운데 정렬).
   { id: 'invaders', name: 'Space Invaders', file: 'games/invaders/index.html', fitHeight: 600,
     levels: 2, mode: 'hold', defaultKey: 'ArrowLeft', defaultKey2: 'ArrowRight', online: false },
+  // 스택: zurkon/playstack (MIT, Three.js, games/stack/SOURCE.md). 힘을 줄 때마다 블록 하나를 놓는다.
+  { id: 'stack', name: 'Stack', file: 'games/stack/index.html', mode: 'tap', defaultKey: 'Space', online: false },
 ];
 
 // 게임 안에서 나가기(Esc)와 겹치는 키는 고를 수 없다

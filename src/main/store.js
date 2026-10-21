@@ -18,7 +18,7 @@ const DEFAULTS = {
   overlay: { x: 98, y: 8, scale: 100, opacity: 95, display: 'primary' },
   // 사용자 모드: 게임마다 누를 키 하나
   // 2단계 게임(인베이더)은 keys = 약하게, keys2 = 세게
-  user: { keys: { gd: 'Space', flappy: 'Space', adofai: 'Space', invaders: 'ArrowLeft' }, keys2: { invaders: 'ArrowRight' } },
+  user: { keys: { gd: 'Space', flappy: 'Space', adofai: 'Space', invaders: 'ArrowLeft', stack: 'Space' }, keys2: { invaders: 'ArrowRight' } },
 };
 const OLD_HOTKEYS = { toggle: 'Ctrl+Alt+F9', overlay: 'Ctrl+Alt+F10' };
 const PRESET_COUNT = 3;
