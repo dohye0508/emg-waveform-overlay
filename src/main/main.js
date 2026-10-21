@@ -157,6 +157,18 @@ function sendKey(action, code) {
   else keysender.release(code);
 }
 
+/**
+ * 게임 페이지 높이(fitHeight)가 창 높이에 꽉 차게 하는 확대 배율.
+ * 픽셀 그림이 고르게 보이도록 실제 화면 픽셀 기준으로 정수 배(2배, 3배…)를 고르고, 2배도 안 되면 그냥 꽉 채운다.
+ */
+function zoomFor(win, fitHeight) {
+  const sf = screen.getDisplayMatching(win.getBounds()).scaleFactor || 1;
+  const physical = win.getContentSize()[1] * sf;
+  const exact = physical / fitHeight;
+  const k = exact >= 2 ? Math.floor(exact) : exact;
+  return Math.max(0.5, k / sf);
+}
+
 function playGame(id) {
   const game = games.gameById(id);
   if (!game) return;
@@ -184,7 +196,7 @@ function playGame(id) {
   // 작은 화면용으로 만든 게임(floppybird 는 날 수 있는 칸이 420px)은 화면 높이에 맞춰 확대한다
   wc.on('did-finish-load', () => {
     if (win.isDestroyed()) return;
-    if (game.fitHeight) wc.setZoomFactor(Math.max(1, win.getContentSize()[1] / game.fitHeight));
+    if (game.fitHeight) wc.setZoomFactor(zoomFor(win, game.fitHeight));
     if (game.css) wc.insertCSS(game.css);
   });
   win.once('ready-to-show', () => { win.show(); win.focus(); });

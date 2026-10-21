@@ -7,12 +7,13 @@
 
 const GAMES = [
   { id: 'gd', name: 'Geometry Dash', url: 'https://www.geometrydash.com/game/index.html', mode: 'hold', defaultKey: 'Space', online: true },
-  { id: 'flappy', name: 'Flappy Bird', file: 'games/flappy/index.html', search: '?easy', fitHeight: 470,
+  { id: 'flappy', name: 'Flappy Bird', file: 'games/flappy/index.html', search: '?easy', fitHeight: 525, // #gamecontainer 의 min-height. 이보다 작게 맞추면 아래(땅)가 잘린다
     // 원래 휴대폰(가로 320px) 화면용 게임이라 가운데 480px 칸에서만 돌리고 양옆은 비운다.
     // 파이프는 원래 x=900 에서 출발하므로 칸 오른쪽(500)에서 출발하게 고치고, 속도(1000px/7.5초)는 그대로 둔다.
     // 시작·점수 화면은 320px 기준 위치라 480px 가운데로 옮긴다(+80px).
     css: [
       'html, body { background: #0E1220 !important; }',
+      '* { image-rendering: pixelated; }',
       '#gamecontainer { width: 480px !important; margin: 0 auto !important; overflow: hidden !important; box-shadow: 0 0 60px rgba(0,0,0,0.7); }',
       // 같은 이름(animPipe)으로 덮으면 원래 것이 이겨서 새 이름을 쓴다
       '@keyframes animPipeNarrow { 0% { left: 500px; } 100% { left: -100px; } }',
