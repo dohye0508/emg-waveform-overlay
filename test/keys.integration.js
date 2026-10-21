@@ -63,7 +63,33 @@ app.whenReady().then(async () => {
     ev = (await events()).filter((e) => e[3] !== true);
     assert.deepStrictEqual(ev.map((e) => e[0]), ['down', 'up'], 'release on stop ' + JSON.stringify(ev));
 
-    console.log('키 입력 통합 시험 통과 (hold / tap / 확장 키 / 정지 시 떼기)');
+    // 마우스: 시험 창 한가운데로 커서를 옮기고 가운데 버튼과 뒤로 버튼을 보낸다 (다른 창이 클릭을 받지 않게)
+    const { screen } = require('electron');
+    const b = win.getBounds();
+    const pt = screen.dipToScreenPoint({ x: b.x + Math.round(b.width / 2), y: b.y + Math.round(b.height / 2) });
+    const koffi = require('koffi');
+    koffi.load('user32.dll').func('bool __stdcall SetCursorPos(int, int)')(pt.x, pt.y);
+    await win.webContents.executeJavaScript("addEventListener('mousedown',e=>ev.push(['mdown',e.button,e.isTrusted]));addEventListener('mouseup',e=>ev.push(['mup',e.button,e.isTrusted]));0");
+    await sleep(200);
+    await events();
+    engine.update(1, 3000);
+    engine.setEnabled(true, 3000);
+    engine.configure({ mode: 'hold', code: 'MouseMiddle', code2: 'MouseBack', levels: 2 });
+    engine.update(15, 3100); // 약하게 → 가운데 버튼 (판정 시간 뒤)
+    engine.tick(3300);
+    await sleep(150);
+    engine.update(1, 3400);
+    await sleep(150);
+    engine.update(40, 3500); // 세게 → 뒤로 버튼
+    await sleep(150);
+    engine.update(1, 3600);
+    await sleep(150);
+    ev = await events();
+    const m = ev.filter((e) => e[0] === 'mdown' || e[0] === 'mup').map((e) => e[0] + ':' + e[1]);
+    assert.deepStrictEqual(m, ['mdown:1', 'mup:1', 'mdown:3', 'mup:3'], 'mouse ' + JSON.stringify(ev));
+    assert.ok(ev.filter((e) => e[0].startsWith('m')).every((e) => e[2] === true), 'mouse isTrusted');
+
+    console.log('키 입력 통합 시험 통과 (hold / tap / 확장 키 / 정지 시 떼기 / 마우스 버튼)');
     code = 0;
   } catch (err) {
     console.error('실패:', err.message);

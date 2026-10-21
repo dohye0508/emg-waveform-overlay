@@ -8,9 +8,11 @@ const { lookup } = require('./keymap');
 const KEYEVENTF_EXTENDEDKEY = 0x0001;
 const KEYEVENTF_KEYUP = 0x0002;
 const KEYEVENTF_SCANCODE = 0x0008;
+const INPUT_MOUSE = 0;
 const INPUT_KEYBOARD = 1;
 
 let impl = null;
+let implMouse = null;
 let loadError = null;
 
 function load() {
@@ -33,6 +35,7 @@ function load() {
     const SendInput = user32.func('uint32 __stdcall SendInput(uint32 cInputs, INPUT *pInputs, int cbSize)');
     const size = koffi.sizeof(INPUT);
     impl = (sc, flags) => SendInput(1, [{ type: INPUT_KEYBOARD, u: { ki: { wVk: 0, wScan: sc, dwFlags: flags, time: 0, dwExtraInfo: 0 } } }], size);
+    implMouse = (flags, data) => SendInput(1, [{ type: INPUT_MOUSE, u: { mi: { dx: 0, dy: 0, mouseData: data, dwFlags: flags, time: 0, dwExtraInfo: 0 } } }], size);
   } catch (err) {
     loadError = err;
   }
@@ -43,6 +46,7 @@ function send(code, up) {
   if (!k) return false;
   load();
   if (!impl) return false;
+  if (k.mouse) return implMouse(up ? k.mouse.up : k.mouse.down, k.mouse.data) === 1;
   const flags = KEYEVENTF_SCANCODE | (k.ext ? KEYEVENTF_EXTENDEDKEY : 0) | (up ? KEYEVENTF_KEYUP : 0);
   return impl(k.sc, flags) === 1;
 }

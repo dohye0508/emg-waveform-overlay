@@ -27,12 +27,25 @@ for (let i = 1; i <= 10; i++) add('F' + i, 0x3a + i);
   ['PageUp', 0x49], ['ArrowLeft', 0x4b], ['ArrowRight', 0x4d], ['End', 0x4f], ['ArrowDown', 0x50], ['PageDown', 0x51],
   ['Insert', 0x52], ['Delete', 0x53], ['MetaLeft', 0x5b], ['MetaRight', 0x5c], ['ContextMenu', 0x5d]].forEach(([c, s]) => add(c, s, true));
 
-/** e.code → { sc, ext } (지원하지 않는 키는 null) */
+// 마우스 버튼: SendInput 의 MOUSEEVENTF 값 (down, up) 과 XBUTTON 번호
+const MOUSE = {
+  MouseLeft: { down: 0x0002, up: 0x0004, data: 0 },
+  MouseRight: { down: 0x0008, up: 0x0010, data: 0 },
+  MouseMiddle: { down: 0x0020, up: 0x0040, data: 0 },
+  MouseBack: { down: 0x0080, up: 0x0100, data: 1 },
+  MouseForward: { down: 0x0080, up: 0x0100, data: 2 },
+};
+/** 마우스 이벤트의 button 번호(0 왼쪽, 1 가운데, 2 오른쪽, 3 뒤로, 4 앞으로) → 코드 */
+const MOUSE_BY_BUTTON = ['MouseLeft', 'MouseMiddle', 'MouseRight', 'MouseBack', 'MouseForward'];
+
+/** e.code → { sc, ext } 또는 { mouse } (지원하지 않는 키는 null) */
 function lookup(code) {
+  if (Object.prototype.hasOwnProperty.call(MOUSE, code)) return { mouse: MOUSE[code] };
   return Object.prototype.hasOwnProperty.call(SC, code) ? { sc: SC[code], ext: EXT.has(code) } : null;
 }
 
 const LABELS = {
+  MouseLeft: '좌클릭', MouseRight: '우클릭', MouseMiddle: '휠클릭', MouseBack: '뒤로', MouseForward: '앞으로',
   Space: 'SPACE', Enter: 'ENTER', Escape: 'ESC', Tab: 'TAB', Backspace: 'BACKSPACE', CapsLock: 'CAPS',
   ShiftLeft: 'L-SHIFT', ShiftRight: 'R-SHIFT', ControlLeft: 'L-CTRL', ControlRight: 'R-CTRL', AltLeft: 'L-ALT', AltRight: 'R-ALT',
   MetaLeft: 'L-WIN', MetaRight: 'R-WIN', ArrowUp: 'UP', ArrowDown: 'DOWN', ArrowLeft: 'LEFT', ArrowRight: 'RIGHT',
@@ -118,4 +131,4 @@ function acceleratorLabel(s) {
   return String(s || '').split('+').join(' + ');
 }
 
-module.exports = { lookup, label, acceleratorFromEvent, normalizeAccelerator, acceleratorLabel, MODIFIER_CODES };
+module.exports = { MOUSE_BY_BUTTON, lookup, label, acceleratorFromEvent, normalizeAccelerator, acceleratorLabel, MODIFIER_CODES };

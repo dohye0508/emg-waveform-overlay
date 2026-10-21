@@ -205,6 +205,26 @@ test('키맵: 스캔코드와 확장 키, 이름 표시', () => {
   assert.strictEqual(keymap.label('ArrowLeft'), 'LEFT');
 });
 
+test('마우스 버튼: 코드 조회, 이름 표시, 설정에 저장되고 약·강이 같으면 하나를 바꾼다', () => {
+  assert.deepStrictEqual(keymap.lookup('MouseLeft'), { mouse: { down: 0x0002, up: 0x0004, data: 0 } });
+  assert.strictEqual(keymap.lookup('MouseRight').mouse.down, 0x0008);
+  assert.strictEqual(keymap.lookup('MouseForward').mouse.data, 2);
+  assert.strictEqual(keymap.lookup('MouseBack').mouse.data, 1);
+  assert.deepStrictEqual(keymap.MOUSE_BY_BUTTON, ['MouseLeft', 'MouseMiddle', 'MouseRight', 'MouseBack', 'MouseForward']);
+  assert.strictEqual(keymap.label('MouseLeft'), '좌클릭');
+  assert.strictEqual(keymap.label('MouseBack'), '뒤로');
+  const s = normalizeSettings({ key: { code: 'MouseLeft', code2: 'MouseRight', levels: 2 } });
+  assert.deepStrictEqual([s.key.code, s.key.code2], ['MouseLeft', 'MouseRight']);
+  const same = normalizeSettings({ key: { code: 'MouseLeft', code2: 'MouseLeft', levels: 2 } });
+  assert.notStrictEqual(same.key.code, same.key.code2);
+  // 엔진은 마우스 코드도 키와 똑같이 누르고 뗀다
+  const { e, log } = makeEngine({ code: 'MouseLeft' });
+  e.setEnabled(true, 0);
+  e.update(20, 1);
+  e.update(1, 2);
+  assert.deepStrictEqual(log, ['down:MouseLeft', 'up:MouseLeft']);
+});
+
 test('단축키: 이벤트 → 문자열 (모디파이어 순서 고정, 모디파이어만/글자 단독은 거부, F키 단독은 허용)', () => {
   assert.strictEqual(keymap.acceleratorFromEvent({ code: 'F9', ctrlKey: true, altKey: true }), 'Ctrl+Alt+F9');
   assert.strictEqual(keymap.acceleratorFromEvent({ code: 'KeyS', shiftKey: true, ctrlKey: true }), 'Ctrl+Shift+S');

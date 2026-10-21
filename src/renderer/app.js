@@ -116,15 +116,31 @@ function seg(parent, label, options, getVal, onPick) {
  * 키 지정: 누르고 키를 치면 onKey(이벤트) 가 true 를 돌려줄 때 저장된 것으로 본다. Esc 는 취소.
  * b 는 버튼이든 칩(span)이든 된다.
  */
-function keyCapture(b, getLabel, onKey) {
+const MOUSE_CODES = ['MouseLeft', 'MouseMiddle', 'MouseRight', 'MouseBack', 'MouseForward'];
+
+function keyCapture(b, getLabel, onKey, allowMouse) {
   let listening = false;
-  const stop = () => { listening = false; b.classList.remove('listen'); };
+  let ignoreClickUntil = 0;
+  const stop = () => { listening = false; b.classList.remove('listen'); window.removeEventListener('mousedown', onMouse, true); };
+  // 마우스 버튼도 지정할 수 있는 칩: 듣는 중에 다음 마우스 입력 하나를 받는다
+  async function onMouse(e) {
+    if (!listening) return;
+    e.preventDefault(); e.stopPropagation();
+    ignoreClickUntil = Date.now() + 400; // 이 입력 뒤에 오는 click 이 다시 듣기를 켜지 않게
+    const code = MOUSE_CODES[e.button];
+    const ok = code ? await onKey({ code }) : false;
+    stop();
+    if (!ok) { b.classList.add('bad'); b.textContent = '안 되는 키'; setTimeout(() => { b.classList.remove('bad'); b.textContent = getLabel(); }, 1200); }
+  }
+  b.addEventListener('contextmenu', (e) => { if (listening || Date.now() < ignoreClickUntil) e.preventDefault(); });
   b.addEventListener('click', (e) => {
     e.stopPropagation();
+    if (Date.now() < ignoreClickUntil) return;
     listening = true;
+    if (allowMouse) window.addEventListener('mousedown', onMouse, true);
     b.classList.add('listen');
     b.classList.remove('bad');
-    b.textContent = '키를 누르세요';
+    b.textContent = allowMouse ? '키·클릭' : '키를 누르세요';
     b.focus();
   });
   b.addEventListener('blur', () => { if (listening) { stop(); b.textContent = getLabel(); } });
@@ -172,8 +188,8 @@ function build() {
   k = card('coral', 'key', '근육 → 키');
   seg(k, '단계', [{ label: '1단계', value: 1 }, { label: '2단계 (약·강)', value: 2 }], () => S.settings.key.levels, (v) => window.api.patch({ key: { levels: v } }));
   let r = row(k, '누를 키');
-  const c1 = keyCapture(el('button', 'keychip'), () => (twoLv() ? '약 · ' : '') + S.keys.label, setKey('code'));
-  const c2 = keyCapture(el('button', 'keychip strong'), () => '강 · ' + S.keys.label2, setKey('code2'));
+  const c1 = keyCapture(el('button', 'keychip'), () => (twoLv() ? '약 · ' : '') + S.keys.label, setKey('code'), true);
+  const c2 = keyCapture(el('button', 'keychip strong'), () => '강 · ' + S.keys.label2, setKey('code2'), true);
   r.append(c1, c2);
   syncers.push(() => { c2.hidden = !twoLv(); c1.classList.toggle('weak', twoLv()); });
   seg(k, '방식', [{ label: '누르는 동안', value: 'hold' }, { label: '한 번만', value: 'tap' }], () => S.settings.key.mode, (v) => window.api.patch({ key: { mode: v } }));
