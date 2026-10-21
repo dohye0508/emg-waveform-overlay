@@ -13,23 +13,27 @@
     <div class="scope">
       <div class="scope-head">
         <h1>EMG Overlay</h1>
-        <div id="status" class="pill"><i class="dot"></i><span id="status-text">장치 없음</span></div>
+        <div id="presets" class="presets"></div>
+        <button id="status" class="pill" title="다시 연결"><i class="dot"></i><span id="status-text">장치 없음</span></button>
       </div>
       <div class="graph g-wave"><canvas id="wave"></canvas></div>
       <div class="graph g-hist"><canvas id="hist"></canvas></div>
     </div>
     <div class="console">
-      <div class="readout">
-        <div id="keycap" class="keycap"><span id="keycap-label">SPACE</span></div>
+      <div id="readout" class="readout">
+        <div class="caps">
+          <div id="cap1" class="keycap"><span class="cap-tag">약</span><span id="cap1-label" class="cap-label">SPACE</span></div>
+          <div id="cap2" class="keycap k2"><span class="cap-tag">강</span><span id="cap2-label" class="cap-label">RIGHT</span></div>
+        </div>
         <div class="force">
           <div class="force-label">지금 힘</div>
           <div id="force" class="force-num">0.0</div>
         </div>
       </div>
-      <button id="run" class="run"><i class="run-dot"></i><span id="run-text">가동 시작</span></button>
+      <button id="run" class="run"><i class="run-dot"></i><span id="run-text">가동 시작</span><span id="hk-run" class="hk" tabindex="0">F8</span></button>
       <div class="switches">
         <button id="sw-test" class="switch s-violet"><i class="track"><b></b></i><span>시험 모드</span></button>
-        <button id="sw-ov" class="switch s-sky"><i class="track"><b></b></i><span>오버레이</span></button>
+        <button id="sw-ov" class="switch s-sky"><i class="track"><b></b></i><span>오버레이</span><span id="hk-ov" class="hk" tabindex="0">F9</span></button>
       </div>
     </div>
   </section>

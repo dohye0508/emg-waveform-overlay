@@ -42,11 +42,15 @@ const now = () => Date.now();
 function applyEngine() {
   engine.configure({
     threshold: settings.trigger.threshold,
+    threshold2: settings.trigger.threshold2,
     releaseRatio: settings.trigger.releaseRatio,
+    levels: settings.key.levels,
     mode: settings.key.mode,
     tapMs: settings.key.tapMs,
     cooldownMs: settings.key.cooldownMs,
+    decideMs: settings.key.decideMs,
     code: settings.key.code,
+    code2: settings.key.code2,
   });
   engine.setTest(test);
   engine.setEnabled((running || test) && !cal.running, now());
@@ -186,8 +190,9 @@ function startDemo(onValues) {
   const t0 = now();
   setInterval(() => {
     const t = now();
-    const phase = ((t - t0) % 5000) / 5000;
-    const amp = phase > 0.45 && phase < 0.75 ? 22 + 10 * Math.sin(phase * 40) : 2.2;
+    // 6초 주기: 쉼 → 약하게(≈14) → 쉼 → 세게(≈30)
+    const phase = ((t - t0) % 6000) / 6000;
+    const amp = phase > 0.2 && phase < 0.4 ? 14 + 2 * Math.sin(phase * 50) : phase > 0.6 && phase < 0.8 ? 30 + 6 * Math.sin(phase * 40) : 2.2;
     const n = 200; // 20 ms × 10 kHz
     const out = new Array(n);
     for (let i = 0; i < n; i++) out[i] = (Math.random() + Math.random() + Math.random() - 1.5) * amp * 2;
@@ -204,7 +209,7 @@ function liveState() {
   const st = deviceStatus(t);
   return {
     rms, connected: st.connected, fps: st.fps, channels: st.channels, name: st.name, openError: st.openError,
-    active: engine.active, pressed: engine.pressed,
+    active: engine.active, level: engine.level, pressed: engine.pressed, pressedLevel: engine.pressedLevel,
   };
 }
 
@@ -220,9 +225,29 @@ function payload() {
     wave: { env: Array.from(ring.envelope(Math.max(1, Math.round(settings.signal.seconds * rate)), 480)), range: settings.signal.scale },
     cal: st, calSens, suggestion: sug,
     hotkeyOk,
-    keys: { available: keysender.available, error: keysender.error, label: keymap.label(settings.key.code) },
+    keys: { available: keysender.available, error: keysender.error, label: keymap.label(settings.key.code), label2: keymap.label(settings.key.code2) },
+    presets: settings.presets.map((p, i) => ({ index: i, used: !!p.data, label: presetLabel(p.data) })),
+    activePreset: settings.activePreset,
     displays: screen.getAllDisplays().map((d, i) => ({ index: i, label: (d.label || '모니터') + ' ' + d.size.width + '×' + d.size.height, primary: d.id === screen.getPrimaryDisplay().id })),
   };
+}
+
+/** 프리셋 버튼에 보일 키 이름 */
+function presetLabel(data) {
+  if (!data) return '';
+  const k = data.key;
+  return k.levels === 2 ? keymap.label(k.code) + ' · ' + keymap.label(k.code2) : keymap.label(k.code);
+}
+
+function selectPreset(i) {
+  const p = settings.presets[i];
+  if (!p) return;
+  // 고른 칸에 저장된 설정을 지금 설정으로 (빈 칸이면 지금 설정을 그 칸에 담는다)
+  settings = normalizeSettings({ ...merge(settings, p.data || {}), activePreset: i });
+  scheduleSave();
+  restartRmsTimer();
+  applyEngine();
+  placeOverlay();
 }
 
 function overlayFrame() {
@@ -231,7 +256,9 @@ function overlayFrame() {
   return {
     env: Array.from(ring.envelope(n, COLUMNS)),
     rms, threshold: settings.trigger.threshold, release: settings.trigger.threshold * settings.trigger.releaseRatio,
-    range: sg.scale, active: engine.active, pressed: engine.pressed, keyLabel: keymap.label(settings.key.code),
+    threshold2: settings.trigger.threshold2, levels: settings.key.levels, level: engine.level,
+    range: sg.scale, active: engine.active, pressed: engine.pressed, pressedLevel: engine.pressedLevel,
+    keyLabel: keymap.label(settings.key.code), keyLabel2: keymap.label(settings.key.code2),
     connected: deviceStatus(now()).connected, test, drag: dragMode,
   };
 }
@@ -276,11 +303,14 @@ function finishDrag() {
 }
 
 function keyTest() {
-  const code = settings.key.code;
-  setTimeout(() => {
-    keysender.press(code);
-    setTimeout(() => keysender.release(code), 300);
-  }, 3000);
+  // 3초 뒤 약하게 키, 2단계면 1초 뒤 세게 키
+  const codes = settings.key.levels === 2 ? [settings.key.code, settings.key.code2] : [settings.key.code];
+  codes.forEach((code, i) => {
+    setTimeout(() => {
+      keysender.press(code);
+      setTimeout(() => keysender.release(code), 300);
+    }, 3000 + i * 1000);
+  });
 }
 
 function wireIpc() {
@@ -292,6 +322,7 @@ function wireIpc() {
   ipcMain.handle('test:set', (_e, on) => { test = !!on; applyEngine(); updateOverlayVisibility(); return payload(); });
   ipcMain.handle('drag:set', (_e, on) => { if (on) startDrag(); else finishDrag(); return payload(); });
   ipcMain.handle('key:test', () => { keyTest(); return true; });
+  ipcMain.handle('preset:select', (_e, i) => { selectPreset(Number(i)); return payload(); });
   ipcMain.handle('device:reconnect', () => { hidIn.reconnect(); return true; });
   ipcMain.handle('cal:start', () => {
     if (!deviceStatus(now()).connected) return payload();
@@ -306,7 +337,7 @@ function wireIpc() {
     if (!r || !r.ok) return payload();
     const sug = suggestThreshold(r.stats, calSens);
     const patch = { signal: { channel: r.emg.channel, mainsHz: r.emg.mainsHz, notch: r.emg.notch, highpassHz: r.emg.highpassHz } };
-    if (sug) patch.trigger = { threshold: sug.threshold, releaseRatio: sug.releaseRatio };
+    if (sug) patch.trigger = { threshold: sug.threshold, threshold2: sug.threshold2, releaseRatio: sug.releaseRatio };
     patchSettings(patch);
     cal.cancel();
     applyEngine();

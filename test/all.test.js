@@ -115,6 +115,78 @@ test('엔진: 신호 끊김·키/방식 변경·releaseAll 때 눌린 키를 뗀
   assert.strictEqual(b.log[b.log.length - 1], 'up:KeyA');
 });
 
+function two(cfg) {
+  return makeEngine({ levels: 2, threshold: 10, threshold2: 25, code: 'ArrowLeft', code2: 'ArrowRight', decideMs: 150, ...cfg });
+}
+
+test('2단계 hold: 약하게는 판정 시간 뒤에 왼쪽, 세게까지 오르면 바로 오른쪽 (왼쪽은 안 눌림)', () => {
+  const a = two();
+  a.e.setEnabled(true, 0);
+  a.e.update(15, 1000); // 약하게 구간
+  a.e.tick(1100);
+  assert.deepStrictEqual(a.log, []); // 아직 판정 중
+  a.e.tick(1150);
+  assert.deepStrictEqual(a.log, ['down:ArrowLeft']);
+  a.e.update(2, 1300);
+  assert.deepStrictEqual(a.log, ['down:ArrowLeft', 'up:ArrowLeft']);
+
+  const b = two();
+  b.e.setEnabled(true, 0);
+  b.e.update(15, 1000); // 세게 주는 도중 약하게 구간을 지난다
+  b.e.update(30, 1050);
+  b.e.tick(1200);
+  assert.deepStrictEqual(b.log, ['down:ArrowRight']);
+  assert.strictEqual(b.e.state.pressedLevel, 2);
+});
+
+test('2단계 hold: 세게에서 힘을 빼며 약하게 구간을 지날 때 왼쪽을 누르지 않는다, 약하게→세게로 올리면 바꿔 누른다', () => {
+  const a = two();
+  a.e.setEnabled(true, 0);
+  a.e.update(30, 0);
+  a.e.update(15, 100); // 25×0.7=17.5 아래로: 약하게 단계로 내려옴
+  a.e.tick(400);
+  assert.deepStrictEqual(a.log, ['down:ArrowRight', 'up:ArrowRight']);
+  a.e.update(2, 500);
+  a.e.update(15, 600); // 쉼을 거쳤으니 다시 판정
+  a.e.tick(800);
+  assert.deepStrictEqual(a.log.slice(2), ['down:ArrowLeft']);
+  a.e.update(30, 900);
+  assert.deepStrictEqual(a.log.slice(2), ['down:ArrowLeft', 'up:ArrowLeft', 'down:ArrowRight']);
+});
+
+test('2단계 tap: 짧게 약하게 → 왼쪽 한 번, 세게 → 오른쪽 한 번, 쉼으로 돌아와야 다음 탭', () => {
+  const a = two({ mode: 'tap', tapMs: 30, cooldownMs: 0 });
+  a.e.setEnabled(true, 0);
+  a.e.update(15, 1000);
+  a.e.update(2, 1080); // 판정 시간 안에 힘을 뺐다 → 약하게
+  assert.deepStrictEqual(a.log, ['down:ArrowLeft']);
+  a.e.tick(1111);
+  assert.deepStrictEqual(a.log, ['down:ArrowLeft', 'up:ArrowLeft']);
+  a.e.update(15, 1200);
+  a.e.update(30, 1250); // 세게
+  assert.deepStrictEqual(a.log.slice(2), ['down:ArrowRight']);
+  a.e.tick(1290);
+  a.e.update(15, 1300); // 내려오는 중: 탭 없음
+  a.e.tick(1600);
+  assert.deepStrictEqual(a.log.slice(2), ['down:ArrowRight', 'up:ArrowRight']);
+  a.e.update(2, 1700);
+  a.e.update(15, 1800);
+  a.e.tick(1960); // 판정 시간이 지나도 세게가 아니면 약하게
+  assert.deepStrictEqual(a.log.slice(4), ['down:ArrowLeft']);
+});
+
+test('2단계: 판정 중에 정지·신호 끊김이면 아무 키도 안 누른다, 1단계로 바꾸면 눌린 키를 뗀다', () => {
+  const a = two();
+  a.e.setEnabled(true, 0);
+  a.e.update(15, 0);
+  a.e.signalLost();
+  a.e.tick(500);
+  assert.deepStrictEqual(a.log, []);
+  a.e.update(30, 600);
+  a.e.configure({ levels: 1 });
+  assert.deepStrictEqual(a.log, ['down:ArrowRight', 'up:ArrowRight']);
+});
+
 // ───────────── 키맵 ─────────────
 test('키맵: 스캔코드와 확장 키, 이름 표시', () => {
   assert.deepStrictEqual(keymap.lookup('Space'), { sc: 0x39, ext: false });
@@ -186,7 +258,8 @@ test('파형 압축: 열마다 min/max, 샘플이 모자라면 오른쪽에 맞�
 test('설정 정리: 범위로 자르고, 잘못된 값은 기본값, 같은 단축키는 막는다', () => {
   const d = normalizeSettings(null);
   assert.deepStrictEqual(d, normalizeSettings(d)); // 두 번 정리해도 같다
-  assert.strictEqual(d.hotkeys.toggle, 'Ctrl+Alt+F9');
+  assert.strictEqual(d.hotkeys.toggle, 'F8');
+  assert.strictEqual(d.hotkeys.overlay, 'F9');
   const s = normalizeSettings({
     key: { code: 'Nope', mode: 'x', tapMs: 9999, cooldownMs: -5 },
     trigger: { threshold: 'abc', releaseRatio: 5, windowMs: 33 },
@@ -220,6 +293,49 @@ test('설정 병합과 저장: 일부만 바꿔도 나머지는 유지, 다시 �
   fs.writeFileSync(path.join(dir, 'settings.json'), '{ not json');
   assert.deepStrictEqual(new Store(dir).load(), base);
   assert.ok(fs.readdirSync(dir).some((f) => f.startsWith('settings.json.corrupt-')));
+});
+
+test('설정: 예전 기본 단축키(Ctrl+Alt+F9/F10)는 F8/F9 로 바뀌고, 직접 고른 단축키는 그대로', () => {
+  const old = normalizeSettings({ hotkeys: { toggle: 'Ctrl+Alt+F9', overlay: 'Ctrl+Alt+F10' } });
+  assert.deepStrictEqual(old.hotkeys, { toggle: 'F8', overlay: 'F9' });
+  const mine = normalizeSettings({ hotkeys: { toggle: 'Ctrl+Shift+S', overlay: 'F4' } });
+  assert.deepStrictEqual(mine.hotkeys, { toggle: 'Ctrl+Shift+S', overlay: 'F4' });
+  // 새 판에서 다시 Ctrl+Alt+F9 를 고르면 그대로 둔다
+  const again = normalizeSettings({ v: 2, hotkeys: { toggle: 'Ctrl+Alt+F9', overlay: 'Ctrl+Alt+F10' } });
+  assert.strictEqual(again.hotkeys.toggle, 'Ctrl+Alt+F9');
+});
+
+test('설정: 세게 역치는 약하게보다 위, 두 키는 서로 다르다', () => {
+  const s = normalizeSettings({ trigger: { threshold: 30, threshold2: 20 }, key: { code: 'ArrowRight', code2: 'ArrowRight', levels: 2 } });
+  assert.ok(s.trigger.threshold2 > s.trigger.threshold);
+  assert.notStrictEqual(s.key.code, s.key.code2);
+  assert.strictEqual(s.key.levels, 2);
+});
+
+test('프리셋: 3칸, 지금 칸은 지금 설정과 같고, 칸을 바꾸면 그 칸 설정이 불러와진다, 빈 칸은 지금 설정으로 시작', () => {
+  let s = normalizeSettings(null);
+  assert.strictEqual(s.presets.length, 3);
+  assert.strictEqual(s.activePreset, 0);
+  assert.strictEqual(s.presets[0].data.trigger.threshold, s.trigger.threshold);
+  assert.strictEqual(s.presets[1].data, null);
+  // 칸 0 에서 역치를 바꾸면 칸 0 에 같이 저장된다
+  s = normalizeSettings(merge(s, { trigger: { threshold: 12 } }));
+  assert.strictEqual(s.presets[0].data.trigger.threshold, 12);
+  // 빈 칸 1 로: 지금 설정을 그대로 담는다
+  s = normalizeSettings({ ...s, activePreset: 1 });
+  assert.strictEqual(s.presets[1].data.trigger.threshold, 12);
+  // 칸 1 에서 2단계·다른 키로 바꾼다
+  s = normalizeSettings(merge(s, { key: { levels: 2, code: 'ArrowLeft', code2: 'ArrowRight' }, trigger: { threshold: 8 } }));
+  // 칸 0 으로 돌아가면 칸 0 설정 (1단계, 역치 12)
+  const sel = (st, i) => normalizeSettings({ ...merge(st, st.presets[i].data || {}), activePreset: i });
+  s = sel(s, 0);
+  assert.deepStrictEqual([s.key.levels, s.key.code, s.trigger.threshold], [1, 'Space', 12]);
+  s = sel(s, 1);
+  assert.deepStrictEqual([s.key.levels, s.key.code, s.key.code2, s.trigger.threshold], [2, 'ArrowLeft', 'ArrowRight', 8]);
+  // 단축키는 프리셋에 안 담긴다
+  assert.strictEqual(s.presets[1].data.hotkeys, undefined);
+  // 깨진 프리셋은 빈 칸
+  assert.strictEqual(normalizeSettings({ presets: [null, 'x', { data: 5 }] }).presets[2].data, null);
 });
 
 // ───────────── 장치 연결 ─────────────

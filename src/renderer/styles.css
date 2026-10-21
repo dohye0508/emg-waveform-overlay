@@ -11,7 +11,7 @@ button { font: inherit; color: inherit; }
 .scope { flex: 1 1 0; min-width: 0; padding: 18px 20px; border-radius: 20px; background: linear-gradient(180deg, #1A2136 0%, var(--surface) 100%); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
 .scope-head { display: flex; align-items: center; height: 40px; flex: none; gap: 16px; margin-bottom: 2px; }
 h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 34px; letter-spacing: 0.3px; white-space: nowrap; }
-.pill { margin-left: auto; display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 16px; border-radius: 18px; background: var(--inset); border: 1px solid var(--line); font-size: 17px; font-weight: 700; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pill { margin-left: auto; cursor: pointer; display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 16px; border-radius: 18px; background: var(--inset); border: 1px solid var(--line); font-size: 17px; font-weight: 700; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .pill .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dim); }
 .pill.ok { color: var(--text); }
 .pill.ok .dot { background: var(--mint); box-shadow: 0 0 10px var(--mint); }
@@ -24,19 +24,33 @@ h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 34p
 
 .console { width: 424px; flex: none; padding: 20px; border-radius: 20px; background: linear-gradient(180deg, #1A2136 0%, var(--surface) 100%); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
 .readout { display: flex; align-items: center; gap: 22px; height: 132px; flex: none; }
-.keycap { width: 160px; height: 112px; flex: none; margin-bottom: 8px; border-radius: 18px; display: flex; align-items: center; justify-content: center;
+.caps { display: flex; gap: 12px; flex: none; }
+.keycap { position: relative; width: 160px; height: 112px; flex: none; margin-bottom: 8px; border-radius: 18px; display: flex; align-items: center; justify-content: center;
   background: linear-gradient(180deg, #2B3452 0%, #212943 100%); border: 1px solid #343E60; box-shadow: 0 8px 0 #0A0E1A, inset 0 1px 0 rgba(255,255,255,0.08);
   font-weight: 700; font-size: 26px; letter-spacing: 1px; color: var(--sub); white-space: nowrap; overflow: hidden; transition: transform 60ms, box-shadow 60ms, background 60ms; }
+.keycap .cap-label { overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 16px); }
+.keycap .cap-tag { display: none; position: absolute; left: 10px; top: 8px; font-family: var(--font-title); font-size: 16px; letter-spacing: 0; }
+.keycap.k2 { display: none; }
 .keycap.down { transform: translateY(6px); background: linear-gradient(180deg, #FF9C9C 0%, #F27D7D 100%); border-color: #FFB3B3; color: #2B0E10;
   box-shadow: 0 2px 0 #4A1D22, 0 0 32px rgba(255, 143, 143, 0.45); }
 .keycap.test { outline: 2px dashed var(--violet); outline-offset: 5px; }
+/* 2단계: 키캡 두 개 (약 = 호박, 강 = 산호) */
+.two .keycap { width: 112px; height: 104px; font-size: 20px; }
+.two .keycap.k2 { display: flex; }
+.two .keycap .cap-tag { display: block; }
+.two #cap1 .cap-tag { color: var(--amber); }
+.two #cap2 .cap-tag { color: var(--coral); }
+.two #cap1.down { background: linear-gradient(180deg, #F8C77A 0%, #EAA94C 100%); border-color: #FFD89A; color: #2A1A05; box-shadow: 0 2px 0 #4A3410, 0 0 32px rgba(244, 184, 96, 0.45); }
+.two .keycap.down .cap-tag { color: inherit; }
+.two .force-num { font-size: 50px; }
 .force { min-width: 0; flex: 1 1 0; }
 .force-label { font-size: 17px; font-weight: 700; color: var(--sub); white-space: nowrap; }
 .force-num { font-size: 64px; font-weight: 700; line-height: 1.05; color: var(--sky); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .force-num.hot { color: var(--coral); text-shadow: 0 0 24px rgba(255, 143, 143, 0.4); }
+.force-num.warm { color: var(--amber); text-shadow: 0 0 24px rgba(244, 184, 96, 0.35); }
 .force-num.off { color: var(--dim); }
 
-.run { height: 64px; flex: none; border-radius: 16px; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;
+.run { position: relative; height: 64px; flex: none; border-radius: 16px; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;
   font-family: var(--font-title); font-size: 28px; color: #0B2A1F; background: linear-gradient(180deg, #84EBC3 0%, #63D4A8 100%); box-shadow: 0 6px 18px rgba(114, 227, 182, 0.25); white-space: nowrap; }
 .run:hover { filter: brightness(1.05); }
 .run .run-dot { width: 12px; height: 12px; border-radius: 50%; background: #0B2A1F; }
@@ -129,3 +143,27 @@ input[type=number]::-webkit-inner-spin-button { display: none; }
 .version { position: absolute; right: 26px; bottom: 5px; font-size: 13px; font-weight: 700; color: var(--dim); }
 .btn.solid:disabled { background: transparent; color: var(--dim); border-color: var(--line); opacity: 1; }
 .count:empty { display: none; }
+
+/* 버튼 안의 단축키 칩: 눌러서 바로 바꾼다 */
+.hk { height: 30px; line-height: 28px; padding: 0 10px; border-radius: 8px; font-family: var(--font-ui); font-size: 15px; font-weight: 700; letter-spacing: 0.3px; white-space: nowrap; cursor: pointer;
+  background: rgba(10, 20, 30, 0.18); border: 1px solid rgba(10, 20, 30, 0.25); border-bottom-width: 3px; outline: none; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+.run .hk { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #0B2A1F; }
+.run.on .hk { color: var(--coral); background: color-mix(in srgb, var(--coral) 12%, transparent); border-color: color-mix(in srgb, var(--coral) 40%, transparent); }
+.switch .hk { height: 26px; line-height: 23px; font-size: 13px; padding: 0 7px; color: var(--sub); background: var(--surface-2); border-color: var(--line); margin-left: -2px; }
+.hk.listen { background: var(--violet) !important; color: #120E2A !important; border-color: var(--violet) !important; }
+.hk.bad { background: var(--coral) !important; color: #2B0E10 !important; }
+
+/* 프리셋 3칸 */
+.presets { display: flex; gap: 8px; margin-left: 28px; flex: none; }
+.preset { width: 132px; height: 40px; padding: 0 12px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+  background: var(--inset); border: 1px solid var(--line); color: var(--sub); }
+.preset .p-num { font-family: var(--font-title); font-size: 22px; flex: none; }
+.preset .p-label { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.preset.empty { border-style: dashed; color: var(--dim); }
+.preset:hover:not(.on) { border-color: color-mix(in srgb, var(--violet) 40%, transparent); }
+.preset.on { background: color-mix(in srgb, var(--violet) 16%, var(--inset)); border-color: color-mix(in srgb, var(--violet) 60%, transparent); color: var(--text); }
+.preset.on .p-num { color: var(--violet); }
+
+/* 2단계 키 칩: 약 = 호박, 강 = 산호 */
+.keychip.weak { --accent: var(--amber); }
+.keychip.strong { --accent: var(--coral); }

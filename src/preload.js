@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('api', {
   setTest: (on_) => ipcRenderer.invoke('test:set', on_),
   setDrag: (on_) => ipcRenderer.invoke('drag:set', on_),
   keyTest: () => ipcRenderer.invoke('key:test'),
+  selectPreset: (i) => ipcRenderer.invoke('preset:select', i),
   reconnect: () => ipcRenderer.invoke('device:reconnect'),
   calStart: () => ipcRenderer.invoke('cal:start'),
   calCancel: () => ipcRenderer.invoke('cal:cancel'),

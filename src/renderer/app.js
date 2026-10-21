@@ -19,7 +19,7 @@ fit();
 const ICONS = {
   threshold: '<path d="M3 17l5-6 4 3 4-7 5 5"/><path d="M3 9h18" stroke-dasharray="2 3"/>',
   auto: '<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3"/>',
-  hotkey: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/>',
+  timing: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/>',
   key: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
   signal: '<path d="M2 12h3l2-6 3 12 3-9 2 5 2-2h5"/>',
   overlay: '<rect x="3" y="4" width="18" height="13" rx="2"/><rect x="12" y="7" width="6" height="4" rx="1"/><path d="M8 21h8"/>',
@@ -87,7 +87,9 @@ function sliderPair(r, { min, max, step, dec, get: getV, send, enabled }) {
 }
 
 function slider(parent, label, path, min, max, step, dec, enabled) {
-  sliderPair(row(parent, label), { min, max, step, dec, enabled, get: () => get(S.settings, path), send: (v) => window.api.patch(nest(path, v)) });
+  const r = row(parent, label);
+  sliderPair(r, { min, max, step, dec, enabled, get: () => get(S.settings, path), send: (v) => window.api.patch(nest(path, v)) });
+  return r;
 }
 
 /** 분할 버튼 */
@@ -110,14 +112,21 @@ function seg(parent, label, options, getVal, onPick) {
   row(parent, label).appendChild(segBox(options, getVal, onPick));
 }
 
-/** 키 지정 칩: 누르고 키를 치면 저장 */
-function capture(parent, label, getLabel, onKey) {
-  const r = row(parent, label);
-  const b = el('button', 'keychip');
-  r.appendChild(b);
+/**
+ * 키 지정: 누르고 키를 치면 onKey(이벤트) 가 true 를 돌려줄 때 저장된 것으로 본다. Esc 는 취소.
+ * b 는 버튼이든 칩(span)이든 된다.
+ */
+function keyCapture(b, getLabel, onKey) {
   let listening = false;
   const stop = () => { listening = false; b.classList.remove('listen'); };
-  b.addEventListener('click', () => { listening = true; b.classList.add('listen'); b.classList.remove('bad'); b.textContent = '키를 누르세요'; b.focus(); });
+  b.addEventListener('click', (e) => {
+    e.stopPropagation();
+    listening = true;
+    b.classList.add('listen');
+    b.classList.remove('bad');
+    b.textContent = '키를 누르세요';
+    b.focus();
+  });
   b.addEventListener('blur', () => { if (listening) { stop(); b.textContent = getLabel(); } });
   b.addEventListener('keydown', async (e) => {
     if (!listening) return;
@@ -125,35 +134,49 @@ function capture(parent, label, getLabel, onKey) {
     if (e.key === 'Escape') { stop(); b.textContent = getLabel(); return; }
     const ok = await onKey({ code: e.code, ctrlKey: e.ctrlKey, altKey: e.altKey, shiftKey: e.shiftKey, metaKey: e.metaKey });
     stop();
-    if (!ok) { b.classList.add('bad'); b.textContent = '지원하지 않는 키'; setTimeout(() => { b.classList.remove('bad'); b.textContent = getLabel(); }, 1200); }
+    if (!ok) { b.classList.add('bad'); b.textContent = '안 되는 키'; setTimeout(() => { b.classList.remove('bad'); b.textContent = getLabel(); }, 1200); }
   });
   syncers.push(() => { if (!listening && !b.classList.contains('bad')) b.textContent = getLabel(); });
+  return b;
 }
 
-const accelText = (a) => a.split('+').join(' + ');
+/** 누를 키 지정: 저장된 뒤 상태를 다시 읽어 실제로 바뀌었는지 본다 (지원하지 않는 키는 설정 정리에서 걸러진다) */
+function setKey(field) {
+  return async (ev) => {
+    window.api.patch({ key: { [field]: ev.code } });
+    await new Promise((res) => setTimeout(res, 120));
+    S = await window.api.getState();
+    return S.settings.key[field] === ev.code;
+  };
+}
+
+function setHotkey(field) {
+  return async (ev) => {
+    const a = await window.api.accel(ev);
+    if (!a) return false;
+    window.api.patch({ hotkeys: { [field]: a } });
+    return true;
+  };
+}
 
 function build() {
+  const twoLv = () => S.settings.key.levels === 2;
+
   // ── 1단 ──
   let k = card('amber', 'threshold', '역치');
-  slider(k, '역치', ['trigger', 'threshold'], 0.5, 100, 0.1, 1);
+  const thRow = slider(k, '역치', ['trigger', 'threshold'], 0.5, 100, 0.1, 1);
+  slider(k, '세게', ['trigger', 'threshold2'], 0.5, 150, 0.1, 1, twoLv);
   slider(k, '해제 비율', ['trigger', 'releaseRatio'], 0.4, 0.95, 0.01, 2);
-  slider(k, '반응 속도', ['trigger', 'windowMs'], 25, 200, 5, 0);
+  syncers.push(() => { thRow.firstChild.textContent = twoLv() ? '약하게' : '역치'; });
 
-  k = card('coral', 'hotkey', '단축키');
-  capture(k, '가동', () => accelText(S.settings.hotkeys.toggle),
-    async (ev) => { const a = await window.api.accel(ev); if (!a) return false; window.api.patch({ hotkeys: { toggle: a } }); return true; });
-  capture(k, '오버레이', () => accelText(S.settings.hotkeys.overlay),
-    async (ev) => { const a = await window.api.accel(ev); if (!a) return false; window.api.patch({ hotkeys: { overlay: a } }); return true; });
-  let r = row(k, '장치');
-  const dev = el('div', 'val');
-  const re = el('button', 'btn', '다시 연결');
-  re.addEventListener('click', () => window.api.reconnect());
-  r.append(dev, re);
-  syncers.push(() => {
-    const l = S.live;
-    dev.textContent = l.connected ? (l.name || 'SpikerBox') : l.openError || '없음';
-    dev.className = 'val' + (l.connected ? '' : l.openError ? ' err' : ' off');
-  });
+  k = card('coral', 'key', '근육 → 키');
+  seg(k, '단계', [{ label: '1단계', value: 1 }, { label: '2단계 (약·강)', value: 2 }], () => S.settings.key.levels, (v) => window.api.patch({ key: { levels: v } }));
+  let r = row(k, '누를 키');
+  const c1 = keyCapture(el('button', 'keychip'), () => (twoLv() ? '약 · ' : '') + S.keys.label, setKey('code'));
+  const c2 = keyCapture(el('button', 'keychip strong'), () => '강 · ' + S.keys.label2, setKey('code2'));
+  r.append(c1, c2);
+  syncers.push(() => { c2.hidden = !twoLv(); c1.classList.toggle('weak', twoLv()); });
+  seg(k, '방식', [{ label: '누르는 동안', value: 'hold' }, { label: '한 번만', value: 'tap' }], () => S.settings.key.mode, (v) => window.api.patch({ key: { mode: v } }));
 
   k = card('sky', 'signal', '신호');
   seg(k, '채널', [{ label: '1', value: 1 }, { label: '2', value: 2 }], () => S.settings.signal.channel, (v) => window.api.patch({ signal: { channel: v } }));
@@ -214,18 +237,18 @@ function build() {
     const st = res && res.ok ? res.stats : null;
     tRest.textContent = st ? fmt(st.restHigh, 1) : '--';
     tSq.textContent = st && st.sqTop != null ? fmt(st.sqTop, 1) : '--';
-    tTh.textContent = S.suggestion ? fmt(S.suggestion.threshold, 1) : '--';
-    const msg = res ? (res.error || (res.warnings && res.warnings[0]) || (res.ok && !S.suggestion ? '힘줄 때 신호가 약합니다' : '')) : '';
+    const sg = S.suggestion;
+    tTh.textContent = sg ? (twoLv() ? fmt(sg.threshold, 1) + ' / ' + fmt(sg.threshold2, 1) : fmt(sg.threshold, 1)) : '--';
+    const msg = res ? (res.error || (res.warnings && res.warnings[0]) || (res.ok && !sg ? '힘줄 때 신호가 약합니다' : '')) : '';
     warn.textContent = msg;
     warn.title = msg;
     warn.hidden = !msg;
-    ap.disabled = !(res && res.ok && S.suggestion);
+    ap.disabled = !(res && res.ok && sg);
   });
 
-  k = card('coral', 'key', '근육 → 키');
-  capture(k, '누를 키', () => S.keys.label,
-    async (ev) => { window.api.patch({ key: { code: ev.code } }); await new Promise((res) => setTimeout(res, 120)); const s = await window.api.getState(); S = s; return s.settings.key.code === ev.code; });
-  seg(k, '방식', [{ label: '누르는 동안', value: 'hold' }, { label: '한 번만', value: 'tap' }], () => S.settings.key.mode, (v) => window.api.patch({ key: { mode: v } }));
+  k = card('coral', 'timing', '타이밍');
+  slider(k, '반응 속도', ['trigger', 'windowMs'], 25, 200, 5, 0);
+  slider(k, '판정 시간', ['key', 'decideMs'], 0, 500, 10, 0, twoLv);
   slider(k, '누름 시간', ['key', 'tapMs'], 10, 300, 1, 0, () => S.settings.key.mode === 'tap');
   slider(k, '쿨다운', ['key', 'cooldownMs'], 0, 1000, 5, 0, () => S.settings.key.mode === 'tap');
   r = row(k, null);
@@ -262,12 +285,34 @@ function build() {
   slider(k, '세로 위치', ['overlay', 'y'], 0, 100, 1, 0);
   slider(k, '투명도', ['overlay', 'opacity'], 30, 100, 1, 0);
   slider(k, '표시 시간', ['signal', 'seconds'], 0.5, 5, 0.1, 1);
+
+  // ── 위쪽: 프리셋, 단축키 칩 ──
+  const pbox = $('#presets');
+  const pbtns = [0, 1, 2].map((i) => {
+    const b = el('button', 'preset');
+    const lab = el('span', 'p-label');
+    b.append(el('span', 'p-num', String(i + 1)), lab);
+    b.addEventListener('click', () => window.api.selectPreset(i));
+    pbox.appendChild(b);
+    return { b, lab };
+  });
+  syncers.push(() => {
+    S.presets.forEach((p, i) => {
+      pbtns[i].b.classList.toggle('on', i === S.activePreset);
+      pbtns[i].b.classList.toggle('empty', !p.used);
+      pbtns[i].lab.textContent = p.used ? p.label : '비어 있음';
+      pbtns[i].b.title = p.label;
+    });
+  });
+  keyCapture($('#hk-run'), () => S.settings.hotkeys.toggle, setHotkey('toggle'));
+  keyCapture($('#hk-ov'), () => S.settings.hotkeys.overlay, setHotkey('overlay'));
 }
 
 // ── 위쪽 실시간 화면 ──
 $('#run').addEventListener('click', () => window.api.setRunning(!S.running));
 $('#sw-test').addEventListener('click', () => window.api.setTest(!S.test));
 $('#sw-ov').addEventListener('click', () => window.api.toggleOverlay());
+$('#status').addEventListener('click', () => window.api.reconnect());
 
 const HIST_MS = 6000;
 const hist = [];
@@ -287,10 +332,14 @@ function render(state) {
   st.classList.toggle('err', !l.connected && !!l.openError);
   $('#status-text').textContent = l.connected ? 'SpikerBox · ' + l.fps.toLocaleString('en-US') + ' fps' : l.openError ? '장치 열기 실패' : '장치 없음';
 
-  const kc = $('#keycap');
-  $('#keycap-label').textContent = S.keys.label;
-  kc.classList.toggle('down', l.pressed);
-  kc.classList.toggle('test', S.test);
+  const two = S.settings.key.levels === 2;
+  $('#readout').classList.toggle('two', two);
+  $('#cap1-label').textContent = S.keys.label;
+  $('#cap2-label').textContent = S.keys.label2;
+  $('#cap1').classList.toggle('down', l.pressed && (!two || l.pressedLevel === 1));
+  $('#cap2').classList.toggle('down', l.pressed && two && l.pressedLevel === 2);
+  $('#cap1').classList.toggle('test', S.test);
+  $('#cap2').classList.toggle('test', S.test);
 
   $('#run').classList.toggle('on', S.running);
   $('#run-text').textContent = S.running ? '가동 정지' : '가동 시작';
@@ -307,19 +356,25 @@ function frame() {
     shownForce += ((l.connected ? l.rms : 0) - shownForce) * 0.25;
     const f = $('#force');
     f.textContent = l.connected ? shownForce.toFixed(1) : '--';
-    f.className = 'force-num' + (!l.connected ? ' off' : l.active ? ' hot' : '');
+    const two = S.settings.key.levels === 2;
+    const warm = two && l.level === 1;
+    f.className = 'force-num' + (!l.connected ? ' off' : warm ? ' warm' : l.active ? ' hot' : '');
+    const waveColor = warm ? '#F4B860' : l.active ? '#FF8F8F' : '#82B9FF';
 
     const w = Wave.prep($('#wave'), scale);
     Wave.grid(w.ctx, w.w, w.h, '#182038', 4);
-    if (lastWave) Wave.envelope(w.ctx, w.w, w.h, lastWave.env, lastWave.range, l.active ? '#FF8F8F' : '#82B9FF', l.active);
+    if (lastWave) Wave.envelope(w.ctx, w.w, w.h, lastWave.env, lastWave.range, waveColor, l.active);
 
     const h = Wave.prep($('#hist'), scale);
     Wave.grid(h.ctx, h.w, h.h, '#182038', 4);
-    const th = S.settings.trigger.threshold;
-    Wave.rmsHistory(h.ctx, h.w, h.h, hist, {
-      now: performance.now() - 40, span: HIST_MS, threshold: th, release: th * S.settings.trigger.releaseRatio,
-      color: '#82B9FF', hot: '#FF8F8F', line: '#F4B860', label: '역치 ' + th.toFixed(1),
-    });
+    const tr = S.settings.trigger;
+    const levels = two
+      ? [
+        { v: tr.threshold, release: tr.threshold * tr.releaseRatio, fill: '#F4B860', line: '#F4B860', label: '약 ' + tr.threshold.toFixed(1) },
+        { v: tr.threshold2, release: tr.threshold2 * tr.releaseRatio, fill: '#FF8F8F', line: '#FF8F8F', label: '강 ' + tr.threshold2.toFixed(1) },
+      ]
+      : [{ v: tr.threshold, release: tr.threshold * tr.releaseRatio, fill: '#FF8F8F', line: '#F4B860', label: '역치 ' + tr.threshold.toFixed(1) }];
+    Wave.rmsHistory(h.ctx, h.w, h.h, hist, { now: performance.now() - 40, span: HIST_MS, color: '#82B9FF', levels });
   }
   requestAnimationFrame(frame);
 }

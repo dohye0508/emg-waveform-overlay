@@ -199,7 +199,13 @@ function suggestThreshold(stats, sensitivity = 0.35) {
   const s = Math.min(0.9, Math.max(0.05, Number(sensitivity) || 0.35));
   const threshold = rest + (strong - rest) * s;
   const release = Math.max(rest * 1.05, rest + (strong - rest) * s * 0.55);
-  return { threshold: round(threshold, 1), releaseRatio: round(Math.min(0.95, Math.max(0.4, release / threshold)), 2) };
+  // 2단계 모드의 세게 역치: 같은 구간의 더 위쪽 (민감도 + 0.35, 최대 0.9)
+  const threshold2 = rest + (strong - rest) * Math.min(0.9, s + 0.35);
+  return {
+    threshold: round(threshold, 1),
+    threshold2: round(threshold2, 1),
+    releaseRatio: round(Math.min(0.95, Math.max(0.4, release / threshold)), 2),
+  };
 }
 
 /** 단계 진행 + 샘플 모으기. 시간은 인자로 받는다 */

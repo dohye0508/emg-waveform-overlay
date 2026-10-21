@@ -78,16 +78,17 @@
 
   /**
    * @param hist [{t, v}] 시간순
-   * @param o { now, span, threshold, release, color, hot, line, label }
+   * @param o { now, span, color, levels: [{ v, release, fill, line, label }] (오름차순) }
+   *   levels[i] 위로 올라간 부분은 levels[i].fill 로 칠한다 (다음 단계 아래까지).
    */
   function rmsHistory(ctx, w, h, hist, o) {
     const padT = 10, padB = 8;
-    let vmax = Math.max(o.threshold * 2, 1);
+    const lv = o.levels;
+    const top = lv[lv.length - 1].v;
+    let vmax = Math.max(lv.length > 1 ? top * 1.3 : top * 2, 1);
     for (const p of hist) if (p.v * 1.15 > vmax) vmax = p.v * 1.15;
     const y = (v) => h - padB - (Math.min(v, vmax) / vmax) * (h - padT - padB);
     const x = (t) => w - ((o.now - t) / o.span) * w;
-    const thY = y(o.threshold);
-    const relY = y(o.release);
 
     const pts = hist.filter((p) => o.now - p.t <= o.span + 200);
     if (pts.length > 1) {
@@ -108,49 +109,58 @@
       ctx.lineJoin = 'round';
       ctx.stroke(path);
 
-      // 역치 위쪽만 산호색
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(0, 0, w, thY);
-      ctx.clip();
-      const g2 = ctx.createLinearGradient(0, padT, 0, thY);
-      g2.addColorStop(0, rgba(o.hot, 0.55));
-      g2.addColorStop(1, rgba(o.hot, 0.15));
-      ctx.fillStyle = g2;
-      ctx.fill(area);
-      ctx.strokeStyle = o.hot;
-      ctx.shadowColor = rgba(o.hot, 0.8);
-      ctx.shadowBlur = 10;
-      ctx.stroke(path);
-      ctx.restore();
+      // 단계 구간마다 그 색으로
+      lv.forEach((l, i) => {
+        const y0 = i + 1 < lv.length ? y(lv[i + 1].v) : 0;
+        const y1 = y(l.v);
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, y0, w, y1 - y0);
+        ctx.clip();
+        const g2 = ctx.createLinearGradient(0, y0, 0, y1);
+        g2.addColorStop(0, rgba(l.fill, 0.55));
+        g2.addColorStop(1, rgba(l.fill, 0.15));
+        ctx.fillStyle = g2;
+        ctx.fill(area);
+        ctx.strokeStyle = l.fill;
+        ctx.shadowColor = rgba(l.fill, 0.8);
+        ctx.shadowBlur = 10;
+        ctx.stroke(path);
+        ctx.restore();
+      });
     }
     fadeLeft(ctx, w, h, 0.12);
 
-    // 해제선 (점선), 역치선
-    ctx.save();
-    ctx.strokeStyle = rgba(o.line, 0.45);
-    ctx.setLineDash([4, 5]);
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, Math.round(relY) + 0.5); ctx.lineTo(w, Math.round(relY) + 0.5); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.strokeStyle = o.line;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(0, thY); ctx.lineTo(w, thY); ctx.stroke();
-    ctx.restore();
-
-    if (o.label) {
+    // 해제선 (점선), 역치선, 값 꼬리표 (겹치면 왼쪽으로 비킨다)
+    let lastTag = null;
+    lv.slice().reverse().forEach((l) => {
+      const ly = y(l.v);
       ctx.save();
-      ctx.font = '700 13px Pretendard, sans-serif';
-      const tw = ctx.measureText(o.label).width + 14;
-      const ty = Math.max(2, Math.min(h - 22, thY - 11));
-      ctx.fillStyle = o.line;
-      roundRect(ctx, w - tw - 4, ty, tw, 22, 6);
-      ctx.fill();
-      ctx.fillStyle = '#1A1408';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(o.label, w - tw + 3, ty + 11.5);
+      ctx.strokeStyle = rgba(l.line, 0.45);
+      ctx.setLineDash([4, 5]);
+      ctx.lineWidth = 1;
+      const ry = Math.round(y(l.release)) + 0.5;
+      ctx.beginPath(); ctx.moveTo(0, ry); ctx.lineTo(w, ry); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.strokeStyle = l.line;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(w, ly); ctx.stroke();
+      if (l.label) {
+        ctx.font = '700 13px Pretendard, sans-serif';
+        const tw = ctx.measureText(l.label).width + 14;
+        const ty = Math.max(2, Math.min(h - 24, ly - 11));
+        let tx = w - tw - 4;
+        if (lastTag && Math.abs(lastTag.y - ty) < 24) tx = lastTag.x - tw - 6;
+        ctx.fillStyle = l.line;
+        roundRect(ctx, tx, ty, tw, 22, 6);
+        ctx.fill();
+        ctx.fillStyle = '#1A1408';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(l.label, tx + 7, ty + 11.5);
+        lastTag = { x: tx, y: ty };
+      }
       ctx.restore();
-    }
+    });
   }
 
   function roundRect(ctx, x, y, w, h, r) {
