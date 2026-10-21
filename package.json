@@ -1,7 +1,7 @@
 {
   "name": "emg-waveform-overlay",
   "productName": "EMG Overlay",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "SpikerBox 근전도로 키를 누르고, 게임 위에 파형을 띄우는 오버레이",
   "main": "src/main/main.js",
   "private": true,

@@ -17,8 +17,8 @@ const GAMES = [
       // 같은 이름(animPipe)으로 덮으면 원래 것이 이겨서 새 이름을 쓴다
       '@keyframes animPipeNarrow { 0% { left: 500px; } 100% { left: -100px; } }',
       '.pipe { -webkit-animation: animPipeNarrow 4500ms linear !important; animation: animPipeNarrow 4500ms linear !important; }',
-      // 만든 사람 표시는 남기되 왼쪽 빈 칸 안에 두고 작게
-      '#footer { max-width: 160px; font-size: 10px; line-height: 14px; opacity: 0.6; }',
+      // 화면 왼쪽 아래 만든 사람 표시는 숨긴다 (출처·라이선스는 games/flappy/SOURCE.md, LICENSE 에 있다)
+      '#footer { display: none !important; }',
       '#splash { left: 145px !important; } #scoreboard { left: 123px !important; } #bigscore { left: 230px !important; }',
     ].join(' '),
     mode: 'tap', defaultKey: 'Space', online: false },

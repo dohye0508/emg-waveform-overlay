@@ -19,7 +19,8 @@ main { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; height: 560px; 
 .g-gd { --accent: var(--amber); }
 .g-flappy { --accent: var(--mint); }
 .art { position: relative; height: 290px; flex: none; }
-.art svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.art svg, .art .cover { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.art .cover { object-fit: cover; object-position: center 40%; }
 .tag { position: absolute; right: 16px; top: 16px; height: 32px; line-height: 32px; padding: 0 14px; border-radius: 16px; background: rgba(10, 14, 30, 0.6); color: #DDE6FF; font-size: 15px; font-weight: 700; }
 .body { flex: 1 1 auto; padding: 22px 30px 28px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
 h2 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 40px; line-height: 1.1; white-space: nowrap; }
