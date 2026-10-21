@@ -3,7 +3,7 @@
 // 사용자 모드의 게임 목록과, 게임 중 키 엔진에 줄 설정. 화면(Electron)을 몰라서 테스트할 수 있다.
 //   gd     : RobTop 공식 웹 데모(1단계 Stereo Madness)를 그대로 띄운다. 인터넷이 필요하다.
 //   flappy : 앱에 들어 있는 nebez/floppybird (Apache-2.0, games/flappy/SOURCE.md). 쉬운 모드(틈 200)로 연다. 오프라인.
-// 게임 중에는 1단계로, 사용자가 고른 키 하나만 쓴다. 역치·타이밍은 관리자 설정을 그대로 쓴다.
+// 게임 중에는 게임이 정한 단계(보통 1단계, 인베이더는 2단계)와 사용자가 고른 키를 쓴다. 역치·타이밍은 관리자 설정을 그대로 쓴다.
 
 const GAMES = [
   { id: 'gd', name: 'Geometry Dash', url: 'https://www.geometrydash.com/game/index.html', mode: 'hold', defaultKey: 'Space', online: true },
@@ -28,6 +28,10 @@ const GAMES = [
   // 박자마다 한 번씩 누르는 게임이라 '한 번만'(tap). 키는 Windows 입력(SendInput)으로 앞에 있는 게임 창에 간다.
   { id: 'adofai', name: '얼음과 불의 춤', native: true, windowTitle: 'A Dance of Fire and Ice', launchUrl: 'steam://rungameid/977950',
     exitAccel: 'Ctrl+Q', mode: 'tap', defaultKey: 'Space', online: false },
+  // 스페이스 인베이더: trungvose/space-invaders-phaser-3 (MIT, Phaser 3, games/invaders/SOURCE.md). 2단계: 약하게 = ←, 세게 = →, 발사는 자동.
+  // 화면이 800×600 고정이라 높이에 맞춰 확대한다 (페이지가 가운데 정렬).
+  { id: 'invaders', name: 'Space Invaders', file: 'games/invaders/index.html', fitHeight: 600,
+    levels: 2, mode: 'hold', defaultKey: 'ArrowLeft', defaultKey2: 'ArrowRight', online: false },
 ];
 
 // 게임 안에서 나가기(Esc)와 겹치는 키는 고를 수 없다
@@ -40,17 +44,18 @@ function gameById(id) {
 /** 게임 중 키 엔진 설정 (관리자 설정 위에 게임 키·방식만 덮는다) */
 function engineConfigFor(game, settings) {
   const key = (settings.user && settings.user.keys && settings.user.keys[game.id]) || game.defaultKey;
+  const key2 = (settings.user && settings.user.keys2 && settings.user.keys2[game.id]) || game.defaultKey2 || settings.key.code2;
   return {
     threshold: settings.trigger.threshold,
     threshold2: settings.trigger.threshold2,
     releaseRatio: settings.trigger.releaseRatio,
-    levels: 1,
+    levels: game.levels === 2 ? 2 : 1,
     mode: game.mode,
     tapMs: settings.key.tapMs,
     cooldownMs: settings.key.cooldownMs,
     decideMs: settings.key.decideMs,
     code: key,
-    code2: settings.key.code2,
+    code2: key2,
   };
 }
 

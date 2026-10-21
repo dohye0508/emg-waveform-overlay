@@ -23,14 +23,19 @@ window.addEventListener('keydown', (e) => {
 const MOUSE_CODES = ['MouseLeft', 'MouseMiddle', 'MouseRight', 'MouseBack', 'MouseForward'];
 
 /** 칩을 누르고 키를 치거나 마우스 버튼을 누르면 그 게임의 키로 저장 (Esc 는 취소) */
-function keyCapture(b, gameId) {
-  const label = () => (S.games.find((g) => g.id === gameId) || {}).label || '';
+function keyCapture(b, gameId, field = 'keys') {
+  // field: 'keys' = 누를 키(2단계 게임에선 약하게), 'keys2' = 세게
+  const label = () => {
+    const g = S.games.find((x) => x.id === gameId) || {};
+    if (field === 'keys2') return '강 · ' + (g.label2 || '');
+    return (g.levels === 2 ? '약 · ' : '') + (g.label || '');
+  };
   let listening = false;
   let ignoreClickUntil = 0;
   const save = async (code) => {
-    await window.api.patch({ user: { keys: { [gameId]: code } } });
+    await window.api.patch({ user: { [field]: { [gameId]: code } } });
     S = await window.api.getState();
-    return (S.games.find((g) => g.id === gameId) || {}).key === code;
+    return (S.games.find((g) => g.id === gameId) || {})[field === 'keys2' ? 'key2' : 'key'] === code;
   };
   const stop = () => { listening = false; b.classList.remove('listen'); window.removeEventListener('mousedown', onMouse, true); };
   const fail = () => { b.classList.add('bad'); b.textContent = '안 되는 키'; setTimeout(() => { b.classList.remove('bad'); b.textContent = label(); }, 1200); };
@@ -68,7 +73,7 @@ function keyCapture(b, gameId) {
 
 document.querySelectorAll('.game').forEach((card) => {
   const id = card.dataset.id;
-  keyCapture($('.keychip', card), id);
+  card.querySelectorAll('.keychip').forEach((chip) => keyCapture(chip, id, chip.dataset.field || 'keys'));
   $('.start', card).addEventListener('click', () => window.api.playGame(id));
   // Windows 게임(얼불춤): 켜져 있는지 표시, 꺼져 있으면 미리 켜기
   const pre = $('.prelaunch', card);

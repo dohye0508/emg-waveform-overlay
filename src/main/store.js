@@ -17,7 +17,8 @@ const DEFAULTS = {
   signal: { channel: 1, mainsHz: 60, notch: true, highpassHz: 80, seconds: 2, scale: 200 },
   overlay: { x: 98, y: 8, scale: 100, opacity: 95, display: 'primary' },
   // 사용자 모드: 게임마다 누를 키 하나
-  user: { keys: { gd: 'Space', flappy: 'Space', adofai: 'Space' } },
+  // 2단계 게임(인베이더)은 keys = 약하게, keys2 = 세게
+  user: { keys: { gd: 'Space', flappy: 'Space', adofai: 'Space', invaders: 'ArrowLeft' }, keys2: { invaders: 'ArrowRight' } },
 };
 const OLD_HOTKEYS = { toggle: 'Ctrl+Alt+F9', overlay: 'Ctrl+Alt+F10' };
 const PRESET_COUNT = 3;
@@ -83,6 +84,12 @@ function normalizeCore(raw, version) {
       keys: Object.fromEntries(Object.keys(d.user.keys).map((g) => {
         const k = r.user && r.user.keys && r.user.keys[g];
         return [g, lookup(k) && k !== 'Escape' ? k : d.user.keys[g]];
+      })),
+      keys2: Object.fromEntries(Object.keys(d.user.keys2).map((g) => {
+        const k = r.user && r.user.keys2 && r.user.keys2[g];
+        const weak = lookup(r.user && r.user.keys && r.user.keys[g]) ? r.user.keys[g] : d.user.keys[g];
+        const ok = lookup(k) && k !== 'Escape' && k !== weak;
+        return [g, ok ? k : d.user.keys2[g] !== weak ? d.user.keys2[g] : d.user.keys[g]];
       })),
     },
     overlay: {

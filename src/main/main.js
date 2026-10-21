@@ -418,6 +418,8 @@ function payload() {
       id: g.id, name: g.name, online: g.online, native: !!g.native, exitAccel: g.exitAccel || 'Esc',
       state: g.native ? nativeState[g.id] || 'off' : null,
       key: settings.user.keys[g.id], label: keymap.label(settings.user.keys[g.id]),
+      levels: g.levels === 2 ? 2 : 1,
+      key2: settings.user.keys2[g.id] || null, label2: settings.user.keys2[g.id] ? keymap.label(settings.user.keys2[g.id]) : null,
     })),
     displays: screen.getAllDisplays().map((d, i) => ({ index: i, label: (d.label || '모니터') + ' ' + d.size.width + '×' + d.size.height, primary: d.id === screen.getPrimaryDisplay().id })),
   };
