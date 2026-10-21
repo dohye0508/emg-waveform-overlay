@@ -9,14 +9,34 @@
 </head>
 <body>
 <div id="app">
-  <header>
-    <h1>EMG Overlay</h1>
-    <div id="status" class="status"><i class="dot"></i><span id="status-text">장치 없음</span></div>
-    <button id="run" class="btn run">가동 시작</button>
-  </header>
-  <main id="cols"></main>
+  <section class="hero">
+    <div class="scope">
+      <div class="scope-head">
+        <h1>EMG Overlay</h1>
+        <div id="status" class="pill"><i class="dot"></i><span id="status-text">장치 없음</span></div>
+      </div>
+      <div class="graph g-wave"><canvas id="wave"></canvas></div>
+      <div class="graph g-hist"><canvas id="hist"></canvas></div>
+    </div>
+    <div class="console">
+      <div class="readout">
+        <div id="keycap" class="keycap"><span id="keycap-label">SPACE</span></div>
+        <div class="force">
+          <div class="force-label">지금 힘</div>
+          <div id="force" class="force-num">0.0</div>
+        </div>
+      </div>
+      <button id="run" class="run"><i class="run-dot"></i><span id="run-text">가동 시작</span></button>
+      <div class="switches">
+        <button id="sw-test" class="switch s-violet"><i class="track"><b></b></i><span>시험 모드</span></button>
+        <button id="sw-ov" class="switch s-sky"><i class="track"><b></b></i><span>오버레이</span></button>
+      </div>
+    </div>
+  </section>
+  <main id="grid"></main>
   <footer id="version" class="version"></footer>
 </div>
+<script src="wave.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

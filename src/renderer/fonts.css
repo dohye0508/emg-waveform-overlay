@@ -1,22 +1,30 @@
-@font-face { font-family: 'Do Hyeon'; src: url('fonts/DoHyeon-Regular.ttf') format('truetype'); font-weight: 400; }
+@font-face { font-family: 'Jua'; src: url('fonts/Jua-Regular.ttf') format('truetype'); font-weight: 400; }
 @font-face { font-family: 'Pretendard'; src: url('fonts/Pretendard-Medium.woff2') format('woff2'); font-weight: 500; }
 @font-face { font-family: 'Pretendard'; src: url('fonts/Pretendard-Bold.woff2') format('woff2'); font-weight: 700; }
 
+/*
+  색: 짙은 남회색 바탕 위에 밝기를 맞춘 파스텔 네 가지.
+  칸(카드)은 열마다 색이 다르다: 역치 = 호박, 키 = 산호, 화면 = 하늘. 연결·가동은 민트.
+  밝은 색을 넓게 칠하지 않고(눈부심) 글자·테두리·얇은 채움에만 쓴다.
+*/
 :root {
-  --bg: #070B14;
-  --card: #0E1627;
-  --border: #22304D;
-  --wave-bg: #0A101D;
-  --grid: #16213A;
-  --text: #E8EEFC;
-  --sub: #9FB0D1;
-  --dim: #7C8BAA;
-  --cyan: #35E0F2;
-  --magenta: #FF3D8B;
-  --purple: #8B7BFF;
-  --purple-text: #C9BFFF;
-  --green: #5CE6A6;
-  --font-display: 'Do Hyeon', 'Malgun Gothic', sans-serif;
+  --bg: #0E1220;
+  --bg-2: #121729;
+  --surface: #171D30;
+  --surface-2: #1D2439;
+  --inset: #10152A;
+  --line: #262E48;
+  --line-soft: #1F2640;
+  --text: #EEF0F8;
+  --sub: #A7AEC8;
+  --dim: #6F7896;
+
+  --amber: #F4B860;
+  --coral: #FF8F8F;
+  --sky: #82B9FF;
+  --mint: #72E3B6;
+  --violet: #B7A6FF;
+
+  --font-title: 'Jua', 'Malgun Gothic', sans-serif;
   --font-ui: 'Pretendard', 'Malgun Gothic', sans-serif;
-  --font-num: 'Bahnschrift', 'Segoe UI', sans-serif;
 }

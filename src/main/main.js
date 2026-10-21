@@ -180,9 +180,28 @@ function patchSettings(patch) {
   placeOverlay();
 }
 
+// --demo: 장치 없이 화면을 확인하려고 쉬기·힘주기를 번갈아 흉내 낸 신호를 넣는다 (키 판정 경로는 같다)
+const DEMO = process.argv.includes('--demo');
+function startDemo(onValues) {
+  const t0 = now();
+  setInterval(() => {
+    const t = now();
+    const phase = ((t - t0) % 5000) / 5000;
+    const amp = phase > 0.45 && phase < 0.75 ? 22 + 10 * Math.sin(phase * 40) : 2.2;
+    const n = 200; // 20 ms × 10 kHz
+    const out = new Array(n);
+    for (let i = 0; i < n; i++) out[i] = (Math.random() + Math.random() + Math.random() - 1.5) * amp * 2;
+    onValues(out, 10000);
+  }, 20);
+}
+
+function deviceStatus(t) {
+  return DEMO ? { connected: true, fps: 10000, channels: 2, name: '데모 신호', openError: null } : hidIn.status(t);
+}
+
 function liveState() {
   const t = now();
-  const st = hidIn.status(t);
+  const st = deviceStatus(t);
   return {
     rms, connected: st.connected, fps: st.fps, channels: st.channels, name: st.name, openError: st.openError,
     active: engine.active, pressed: engine.pressed,
@@ -198,6 +217,7 @@ function payload() {
     settings,
     running, test, overlayVisible, dragMode,
     live: liveState(),
+    wave: { env: Array.from(ring.envelope(Math.max(1, Math.round(settings.signal.seconds * rate)), 480)), range: settings.signal.scale },
     cal: st, calSens, suggestion: sug,
     hotkeyOk,
     keys: { available: keysender.available, error: keysender.error, label: keymap.label(settings.key.code) },
@@ -212,7 +232,7 @@ function overlayFrame() {
     env: Array.from(ring.envelope(n, COLUMNS)),
     rms, threshold: settings.trigger.threshold, release: settings.trigger.threshold * settings.trigger.releaseRatio,
     range: sg.scale, active: engine.active, pressed: engine.pressed, keyLabel: keymap.label(settings.key.code),
-    connected: hidIn.status(now()).connected, test, drag: dragMode,
+    connected: deviceStatus(now()).connected, test, drag: dragMode,
   };
 }
 
@@ -274,7 +294,7 @@ function wireIpc() {
   ipcMain.handle('key:test', () => { keyTest(); return true; });
   ipcMain.handle('device:reconnect', () => { hidIn.reconnect(); return true; });
   ipcMain.handle('cal:start', () => {
-    if (!hidIn.status(now()).connected) return payload();
+    if (!deviceStatus(now()).connected) return payload();
     cal.start('full', now());
     applyEngine();
     return payload();
@@ -320,12 +340,13 @@ app.whenReady().then(() => {
     send: (action, code) => { if (action === 'down') keysender.press(code); else keysender.release(code); },
   });
   hidIn = new HidInput({ getSettings: () => settings });
-  hidIn.on('emg', (values, r) => {
+  const onEmg = (values, r) => {
     rate = r;
     lastEmgAt = now();
     ring.push(values);
     emgWin.add(values);
-  });
+  };
+  hidIn.on('emg', onEmg);
   hidIn.on('frames', (frames, r) => { if (cal.running) cal.addFrames(frames, r); });
   hidIn.on('closed', () => { engine.signalLost(); rms = 0; });
 
@@ -339,7 +360,8 @@ app.whenReady().then(() => {
   registerHotkeys();
   applyEngine();
   restartRmsTimer();
-  hidIn.start();
+  if (DEMO) startDemo(onEmg);
+  else hidIn.start();
 
   setInterval(() => {
     const t = now();

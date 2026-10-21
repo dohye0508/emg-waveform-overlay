@@ -1,27 +1,31 @@
 html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; font-family: var(--font-ui); color: var(--text); user-select: none; }
 .card {
-  position: absolute; left: 0; top: 0; width: 360px; height: 176px; box-sizing: border-box; overflow: hidden;
-  padding: 12px; background: #0E1627; border: 2px solid var(--border); border-radius: 16px;
-  transform-origin: 0 0; display: flex; flex-direction: column; gap: 8px;
+  position: absolute; left: 0; top: 0; width: 360px; height: 176px; box-sizing: border-box; overflow: hidden; transform-origin: 0 0;
+  padding: 12px 14px 14px; border-radius: 18px; display: flex; flex-direction: column; gap: 8px;
+  background: linear-gradient(180deg, rgba(27, 34, 56, 0.96) 0%, rgba(14, 18, 32, 0.96) 100%);
+  border: 1px solid rgba(130, 185, 255, 0.22);
+  transition: border-color 80ms, box-shadow 80ms;
 }
-.card.active { border-color: #5A2447; }
-.head { display: flex; align-items: center; gap: 10px; height: 30px; flex: none; min-width: 0; }
-.title { font-family: var(--font-display); font-size: 20px; white-space: nowrap; flex: none; }
-.rms { font-family: var(--font-num); font-size: 24px; font-variant-numeric: tabular-nums; margin-left: auto; white-space: nowrap; color: var(--cyan); flex: none; }
-.active .rms { color: var(--magenta); }
+.card.active { border-color: rgba(255, 143, 143, 0.75); box-shadow: inset 0 0 24px rgba(255, 143, 143, 0.18); }
+.head { display: flex; align-items: center; gap: 8px; height: 30px; flex: none; min-width: 0; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); flex: none; }
+.ok .dot { background: var(--mint); box-shadow: 0 0 8px var(--mint); }
+.title { font-family: var(--font-title); font-size: 21px; white-space: nowrap; flex: none; margin-right: 4px; }
 .chip {
-  display: inline-flex; align-items: center; gap: 8px; height: 26px; padding: 0 10px; border-radius: 8px; flex: none;
-  font-family: var(--font-num); font-size: 15px; white-space: nowrap; color: var(--purple-text);
-  border: 1px solid var(--purple); background: transparent; max-width: 150px; overflow: hidden;
+  height: 24px; line-height: 21px; padding: 0 10px; border-radius: 7px; flex: none; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.5px; color: var(--sub);
+  background: #232B45; border: 1px solid #343E60; border-bottom-width: 3px; transition: transform 60ms;
 }
-.chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex: none; }
-.chip.on { background: var(--magenta); border-color: var(--magenta); color: #fff; }
-.chip.on .dot { background: #fff; }
-canvas { width: 100%; flex: 1 1 auto; min-height: 0; border-radius: 8px; background: var(--wave-bg); display: block; }
-.bar { position: relative; height: 10px; flex: none; border-radius: 5px; background: var(--grid); }
-.fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 5px; background: var(--cyan); }
-.active .fill { background: var(--magenta); }
-.tick { position: absolute; top: -3px; bottom: -3px; width: 3px; left: 50%; margin-left: -1px; border-radius: 2px; background: var(--purple); }
-.drag { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 26px; color: var(--cyan); background: rgba(7, 11, 20, 0.55); border: 2px dashed var(--cyan); border-radius: 16px; -webkit-app-region: drag; }
+.chip.on { background: var(--coral); border-color: #FFB3B3; color: #2B0E10; transform: translateY(2px); border-bottom-width: 1px; box-shadow: 0 0 16px rgba(255, 143, 143, 0.6); }
+.rms { margin-left: auto; font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--sky); flex: none; }
+.active .rms { color: var(--coral); }
+.lost .rms { color: var(--dim); }
+.wave { position: relative; flex: 1 1 auto; min-height: 0; border-radius: 10px; background: rgba(9, 12, 24, 0.7); overflow: hidden; }
+.wave canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.bar { position: relative; height: 10px; flex: none; border-radius: 5px; background: rgba(38, 46, 72, 0.9); }
+.fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 5px; background: linear-gradient(90deg, #5E8FD6, var(--sky)); transition: width 60ms linear; }
+.active .fill { background: linear-gradient(90deg, var(--sky), var(--coral)); box-shadow: 0 0 10px rgba(255, 143, 143, 0.6); }
+.tick { position: absolute; top: -3px; bottom: -3px; width: 3px; left: 50%; margin-left: -1px; border-radius: 2px; background: var(--amber); }
+.tick.rel { background: rgba(244, 184, 96, 0.4); width: 2px; }
+.drag { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-title); font-size: 26px; color: var(--sky); background: rgba(14, 18, 32, 0.6); border: 2px dashed var(--sky); border-radius: 18px; -webkit-app-region: drag; }
 .drag[hidden] { display: none; }
-.card.lost .rms { color: var(--dim); }

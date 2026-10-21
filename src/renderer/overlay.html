@@ -10,14 +10,16 @@
 <body>
 <div id="card" class="card">
   <div class="head">
+    <i id="dot" class="dot"></i>
     <span class="title">근전도</span>
-    <span id="chip" class="chip"><span id="chip-label">SPACE</span><i class="dot"></i></span>
-    <span id="rms" class="rms">0.0</span>
+    <span id="chip" class="chip">SPACE</span>
+    <span id="rms" class="rms">--</span>
   </div>
-  <canvas id="wave" width="672" height="168"></canvas>
-  <div class="bar"><div id="fill" class="fill"></div><div id="tick" class="tick"></div></div>
+  <div class="wave"><canvas id="wave"></canvas></div>
+  <div class="bar"><div id="fill" class="fill"></div><div id="rel" class="tick rel"></div><div class="tick"></div></div>
   <div id="drag" class="drag" hidden>끌어서 옮기기</div>
 </div>
+<script src="wave.js"></script>
 <script src="overlay.js"></script>
 </body>
 </html>

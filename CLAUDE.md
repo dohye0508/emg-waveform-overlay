@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-## 상태: v1.0.0
+## 상태: v1.1.0
 
 Python/tkinter 판을 Electron으로 새로 만들었다. 단위 시험·실제 SendInput 시험·화면 넘침 검사·exe 실행 확인은 끝났다. **실제 SpikerBox를 꽂은 상태의 확인(힘 줄 때 키 눌림, 케이블 분리 시 키 해제)과 실제 게임 위 오버레이는 아직 안 했다** (개발 중 장치가 없었다).
 
@@ -8,7 +8,7 @@ Python/tkinter 판을 Electron으로 새로 만들었다. 단위 시험·실제 
 
 ```bash
 npm install
-npm start
+npm start                # npx electron . --demo: 장치 없이 흉내 신호로 화면 확인 (가동하면 실제 키가 나가니 시험 모드로)
 npm test                 # node test/all.test.js
 npm run test:keys        # electron test/keys.integration.js (실제 SendInput)
 npm run build:win        # dist/emg-waveform-overlay.exe
@@ -18,7 +18,7 @@ npm run build:win        # dist/emg-waveform-overlay.exe
 
 ## 결정 사항 (사용자와 정한 것)
 
-- 스코어보드(`festival_raibit`)와 같은 인상이되 색 톤은 다르게: 남색 바탕, 시안(쉴 때) / 마젠타(힘줄 때·키 눌림). 글꼴: 도현체 = 제목·버튼, Pretendard = 라벨, Bahnschrift = 모든 숫자·키 칩. 작은 설명 글씨는 두지 않는다.
+- 스코어보드(`festival_raibit`)와 같은 인상이되 색 톤은 다르게: 남회색 바탕, 하늘(쉴 때) / 산호(힘줄 때·키 눌림). 글꼴: 주아체 = 제목·버튼, Pretendard = 라벨·숫자 (v1.1에서 도현체·Bahnschrift 대신). 작은 설명 글씨는 두지 않는다. 칸은 열마다 색이 다르다 (역치 = 호박, 키 = 산호, 화면 = 하늘, 연결·가동 = 민트), 밝은 색은 넓게 칠하지 않는다. 모든 줄 40px·라벨 112px·숫자 칸 76px 로 칸끼리 줄이 맞는다. 위쪽에 실시간 파형·힘 그래프(역치 위는 산호색)·키캡이 있다.
 - 연속값은 슬라이더 + 숫자 입력, 이산값만 분할 버튼. 줄바꿈·넘침이 없어야 한다 (`nowrap`, `min-width:0`, 1440×900 설계 + `fit()`).
 - 키는 `e.code`로 지정하고 `SendInput`을 스캔코드 방식으로 보낸다 (게임이 읽는 방식). 단축키는 Electron `globalShortcut`.
 - 역치는 직접 입력하거나 자동 설정(스코어보드 `calib.js` 기반)으로 정한다. 제안만 하고 `적용`을 눌러야 바뀐다.

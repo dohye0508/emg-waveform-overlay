@@ -2,55 +2,46 @@
 
 const card = document.getElementById('card');
 const canvas = document.getElementById('wave');
-const ctx = canvas.getContext('2d');
 const chip = document.getElementById('chip');
-const chipLabel = document.getElementById('chip-label');
 const rmsEl = document.getElementById('rms');
 const fill = document.getElementById('fill');
-const tick = document.getElementById('tick');
+const rel = document.getElementById('rel');
 const dragEl = document.getElementById('drag');
 
 // 창 크기에 맞춰 360×176 카드를 통째로 확대·축소한다 (글자·막대가 같이 커진다)
+let scale = 1;
 function fit() {
-  card.style.transform = 'scale(' + (window.innerWidth / 360) + ')';
+  scale = window.innerWidth / 360;
+  card.style.transform = 'scale(' + scale + ')';
 }
 window.addEventListener('resize', fit);
 fit();
 
-function draw(f) {
-  const w = canvas.width, h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-  ctx.strokeStyle = '#16213A';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let i = 1; i < 4; i++) { ctx.moveTo(0, (h * i) / 4); ctx.lineTo(w, (h * i) / 4); }
-  ctx.stroke();
-  const cols = f.env.length / 2;
-  const mid = h / 2;
-  const k = (h / 2 - 4) / Math.max(1, f.range);
-  ctx.strokeStyle = f.active ? '#FF3D8B' : '#35E0F2';
-  ctx.lineWidth = Math.max(1, w / cols - 0.5);
-  ctx.beginPath();
-  for (let c = 0; c < cols; c++) {
-    const x = ((c + 0.5) * w) / cols;
-    const lo = Math.max(-h / 2 + 2, Math.min(h / 2 - 2, f.env[c * 2] * k));
-    const hi = Math.max(-h / 2 + 2, Math.min(h / 2 - 2, f.env[c * 2 + 1] * k));
-    ctx.moveTo(x, mid - hi);
-    ctx.lineTo(x, mid - lo + 1);
-  }
-  ctx.stroke();
-}
+let last = null;
+let shown = 0;
 
 window.api.onFrame((f) => {
-  draw(f);
+  last = f;
   card.classList.toggle('active', !!f.active);
   card.classList.toggle('lost', !f.connected);
-  chipLabel.textContent = f.keyLabel;
+  card.classList.toggle('ok', !!f.connected);
+  chip.textContent = f.keyLabel;
   chip.classList.toggle('on', !!f.pressed);
-  rmsEl.textContent = f.connected ? f.rms.toFixed(1) : '--';
   const full = Math.max(0.1, f.threshold * 2);
   fill.style.width = Math.min(100, (f.rms / full) * 100) + '%';
-  tick.style.left = '50%';
+  rel.style.left = Math.min(100, (f.release / full) * 100) + '%';
 });
+
+function frame() {
+  if (last) {
+    shown += ((last.connected ? last.rms : 0) - shown) * 0.3;
+    rmsEl.textContent = last.connected ? shown.toFixed(1) : '--';
+    const w = Wave.prep(canvas, scale);
+    Wave.grid(w.ctx, w.w, w.h, 'rgba(38, 46, 72, 0.6)', 4);
+    Wave.envelope(w.ctx, w.w, w.h, last.env, last.range, last.active ? '#FF8F8F' : '#82B9FF', last.active);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
 
 window.api.onDrag((on) => { dragEl.hidden = !on; });
