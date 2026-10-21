@@ -8,8 +8,8 @@ const path = require('path');
 const { lookup, normalizeAccelerator } = require('./keymap');
 
 const DEFAULTS = {
-  // 게임 중에 한 손으로 누를 수 있게 F 키 하나 (v1.1 까지는 Ctrl+Alt+F9 / F10)
-  hotkeys: { toggle: 'F8', overlay: 'F9' },
+  // Ctrl+1 가동, Ctrl+2 오버레이 (v1.1 까지 Ctrl+Alt+F9/F10, v1.2 는 F8/F9 였다)
+  hotkeys: { toggle: 'Ctrl+1', overlay: 'Ctrl+2' },
   // levels 2: 약하게 = code, 세게 = code2. decideMs: 약하게 키를 누르기 전에 세게까지 오르는지 기다리는 시간
   key: { code: 'Space', code2: 'ArrowRight', levels: 1, mode: 'hold', tapMs: 30, cooldownMs: 120, decideMs: 150 },
   // 필터 후 쉴 때 RMS ≈ 2~3, 센 힘 15~58 (2026-10-20 실측)

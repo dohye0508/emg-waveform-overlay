@@ -258,8 +258,8 @@ test('파형 압축: 열마다 min/max, 샘플이 모자라면 오른쪽에 맞�
 test('설정 정리: 범위로 자르고, 잘못된 값은 기본값, 같은 단축키는 막는다', () => {
   const d = normalizeSettings(null);
   assert.deepStrictEqual(d, normalizeSettings(d)); // 두 번 정리해도 같다
-  assert.strictEqual(d.hotkeys.toggle, 'F8');
-  assert.strictEqual(d.hotkeys.overlay, 'F9');
+  assert.strictEqual(d.hotkeys.toggle, 'Ctrl+1');
+  assert.strictEqual(d.hotkeys.overlay, 'Ctrl+2');
   const s = normalizeSettings({
     key: { code: 'Nope', mode: 'x', tapMs: 9999, cooldownMs: -5 },
     trigger: { threshold: 'abc', releaseRatio: 5, windowMs: 33 },
@@ -297,7 +297,7 @@ test('설정 병합과 저장: 일부만 바꿔도 나머지는 유지, 다시 �
 
 test('설정: 예전 기본 단축키(Ctrl+Alt+F9/F10)는 F8/F9 로 바뀌고, 직접 고른 단축키는 그대로', () => {
   const old = normalizeSettings({ hotkeys: { toggle: 'Ctrl+Alt+F9', overlay: 'Ctrl+Alt+F10' } });
-  assert.deepStrictEqual(old.hotkeys, { toggle: 'F8', overlay: 'F9' });
+  assert.deepStrictEqual(old.hotkeys, { toggle: 'Ctrl+1', overlay: 'Ctrl+2' });
   const mine = normalizeSettings({ hotkeys: { toggle: 'Ctrl+Shift+S', overlay: 'F4' } });
   assert.deepStrictEqual(mine.hotkeys, { toggle: 'Ctrl+Shift+S', overlay: 'F4' });
   // 새 판에서 다시 Ctrl+Alt+F9 를 고르면 그대로 둔다
