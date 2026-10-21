@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<title>EMG Overlay</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>EMG Overlay</h1>
+    <div id="status" class="status"><i class="dot"></i><span id="status-text">장치 없음</span></div>
+    <button id="run" class="btn run">가동 시작</button>
+  </header>
+  <main id="cols"></main>
+  <footer id="version" class="version"></footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

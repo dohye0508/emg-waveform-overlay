@@ -1,0 +1,22 @@
+@font-face { font-family: 'Do Hyeon'; src: url('fonts/DoHyeon-Regular.ttf') format('truetype'); font-weight: 400; }
+@font-face { font-family: 'Pretendard'; src: url('fonts/Pretendard-Medium.woff2') format('woff2'); font-weight: 500; }
+@font-face { font-family: 'Pretendard'; src: url('fonts/Pretendard-Bold.woff2') format('woff2'); font-weight: 700; }
+
+:root {
+  --bg: #070B14;
+  --card: #0E1627;
+  --border: #22304D;
+  --wave-bg: #0A101D;
+  --grid: #16213A;
+  --text: #E8EEFC;
+  --sub: #9FB0D1;
+  --dim: #7C8BAA;
+  --cyan: #35E0F2;
+  --magenta: #FF3D8B;
+  --purple: #8B7BFF;
+  --purple-text: #C9BFFF;
+  --green: #5CE6A6;
+  --font-display: 'Do Hyeon', 'Malgun Gothic', sans-serif;
+  --font-ui: 'Pretendard', 'Malgun Gothic', sans-serif;
+  --font-num: 'Bahnschrift', 'Segoe UI', sans-serif;
+}

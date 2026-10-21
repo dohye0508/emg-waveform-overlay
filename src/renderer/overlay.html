@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<title>EMG Overlay</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="overlay.css">
+</head>
+<body>
+<div id="card" class="card">
+  <div class="head">
+    <span class="title">근전도</span>
+    <span id="chip" class="chip"><span id="chip-label">SPACE</span><i class="dot"></i></span>
+    <span id="rms" class="rms">0.0</span>
+  </div>
+  <canvas id="wave" width="672" height="168"></canvas>
+  <div class="bar"><div id="fill" class="fill"></div><div id="tick" class="tick"></div></div>
+  <div id="drag" class="drag" hidden>끌어서 옮기기</div>
+</div>
+<script src="overlay.js"></script>
+</body>
+</html>
