@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-## 상태: v1.8.0
+## 상태: v1.9.0
 
 Python/tkinter 판을 Electron으로 새로 만들었다. 단위 시험·실제 SendInput 시험·화면 넘침 검사·exe 실행 확인은 끝났다. **실제 SpikerBox를 꽂은 상태의 확인(힘 줄 때 키 눌림, 케이블 분리 시 키 해제)과 실제 게임 위 오버레이는 아직 안 했다** (개발 중 장치가 없었다).
 
@@ -27,6 +27,7 @@ npm run build:win        # dist/emg-waveform-overlay.exe
 - v1.6: 네 번째 게임 `invaders` = trungvose/space-invaders-phaser-3 (MIT, Phaser 3.22). 사용자가 "직접 만든 싸구려 말고 공개 리포"를 원해서, 처음 넣은 dwmkerr/spaceinvaders(사각형 그래픽)를 이것으로 바꿨다. 리포에 빌드 파일이 없어 `src/` 를 고친 뒤 리포 방식(`npm ci`, `npm run build`)으로 만든 `game.js` 를 넣었다 (고친 곳은 `games/invaders/SOURCE.md`: 자동 발사, ←/→ 로 새 게임, 끝난 뒤 1.5초 무시, `/assets` → `assets`, 안내 글). 2단계 게임이라 `games.js` 의 `levels: 2`, 사용자 설정 `user.keys2`(세게 키, 약하게 키와 같거나 Esc 면 기본값). 카드 그림은 게임 화면을 잘라 만든 `images/invaders-card.png`. 사용자 화면은 카드 4칸, 카드 높이는 내용에 맞추고 카드+힘 막대를 세로 가운데.
 - v1.7: 다섯 번째 게임 `stack` = zurkon/playstack (MIT, React + Three.js + cannon.js, Ketchapp STACK 클론). 리포 `src/` 를 고친 뒤 `vite build --base=./` 한 `dist/` 를 넣었다 (고친 곳은 `games/stack/SOURCE.md`: 아무 키로도 놓기, 속도 0.15→0.09, 게임오버 뒤 1.2초 무시, z 방향 블록도 떨어지게, 한국어 안내). `file://` 에서 ES 모듈이 문제없이 뜬다. 사용자 화면은 카드 5칸이고 카드 그림은 모두 실제 게임 화면(또는 사용자가 준 그림)을 16:9 로 자른 이미지(`images/*-card.*`). Flappy 카드는 예전 픽셀 그림 조합(CSS)을 지우고 Get Ready 화면 캡처로 바꿨다.
 - v1.8: 여섯 번째 게임 `breakout`(벽돌깨기) = toji/spookyball (MIT, WebGPU 할로윈 벽돌깨기). 처음 본 budnix/ball-and-wall 은 Bower·Grunt 빌드가 필요하고 일부 그림이 유료라 뺐다. 라이브러리는 리포 lock 으로 `npm ci` 해서 필요한 파일만 `games/breakout/vendor/` 에 (이름을 node_modules 에서 바꿈), 인터넷이 필요한 Draco 디코더와 Creepster 글꼴은 같은 것을 받아 넣었다 (`SOURCE.md`). 2단계(약하게 ←, 세게 →), 움직이면 공 발사, 게임오버 뒤 아무 키로 Replay. 이 노트북(Intel Gen12)에서 WebGPU 확인. Bash 도구의 네트워크가 가끔 막혀서 `gh`·`npm` 은 PowerShell 로 돌렸다. 사용자 화면 카드 6칸.
+- v1.9: 일곱 번째 게임 `copter`(카드 이름 `Helicopter Game`) = js-canvas-copter(WTFPL) 물리·틀 + Kenney Tappy Plane(CC0) 그림. 사용자는 "공개 리포 기반, 그래픽은 고퀄리티"를 원했고, 직접 캔버스에 그린 첫 판은 "구리다"고 해서 Kenney 그림으로 바꿨다. 떨어지는 속도가 일정해 부자연스럽다고 해서 물리를 중력+공기 저항으로 바꿨다 (`games/copter/SOURCE.md`). 사용자 화면은 4칸 × 2줄, 힘 막대는 머리줄로 옮김.
 - 키는 `e.code`로 지정하고 `SendInput`을 스캔코드 방식으로 보낸다 (게임이 읽는 방식). 단축키는 Electron `globalShortcut`.
 - 역치는 직접 입력하거나 자동 설정(스코어보드 `calib.js` 기반)으로 정한다. 제안만 하고 `적용`을 눌러야 바뀐다.
 - 정지·신호 끊김(0.5초)·설정 변경·종료 때는 눌린 키를 반드시 뗀다.

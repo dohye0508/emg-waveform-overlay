@@ -11,6 +11,11 @@
 <div id="app">
   <header>
     <h1>근육으로 게임하기</h1>
+    <div class="force">
+      <div class="f-label">지금 힘</div>
+      <div class="meter"><div id="fill" class="fill"></div><div id="tick" class="tick"></div></div>
+      <div id="force" class="f-num">--</div>
+    </div>
     <div id="status" class="pill"><i class="dot"></i><span id="status-text">장치 없음</span></div>
   </header>
 
@@ -82,13 +87,19 @@
         <button class="start">시작</button>
       </div>
     </section>
+
+    <section class="game g-copter" data-id="copter">
+      <div class="art">
+        <img class="cover" src="images/copter-card.png" alt="">
+      </div>
+      <div class="body">
+        <h2>Helicopter Game</h2>
+        <div class="row"><label>누를 키</label><button class="keychip"></button></div>
+        <button class="start">시작</button>
+      </div>
+    </section>
   </main>
 
-  <section class="force">
-    <div class="f-label">지금 힘</div>
-    <div class="meter"><div id="fill" class="fill"></div><div id="tick" class="tick"></div></div>
-    <div id="force" class="f-num">--</div>
-  </section>
   <div class="esc">게임 중 나가기 <b>Esc</b> · 얼음과 불의 춤 <b>Ctrl+Q</b></div>
   <footer id="version" class="version"></footer>
 </div>

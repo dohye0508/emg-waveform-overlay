@@ -7,43 +7,43 @@ button { font: inherit; color: inherit; }
 
 header { display: flex; align-items: center; height: 72px; flex: none; }
 h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 46px; white-space: nowrap; }
-.pill { margin-left: auto; display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 20px; border-radius: 23px; background: var(--inset); border: 1px solid var(--line); font-size: 20px; font-weight: 700; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pill { flex: none; display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 20px; border-radius: 23px; background: var(--inset); border: 1px solid var(--line); font-size: 20px; font-weight: 700; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .pill .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--dim); }
 .pill.ok { color: var(--text); }
 .pill.ok .dot { background: var(--mint); box-shadow: 0 0 10px var(--mint); }
 
-main { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; flex: none; margin-top: auto; } /* 카드 + 힘 막대를 남는 높이의 가운데에 */
+main { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 20px; flex: none; margin: auto 0; } /* 4칸 × 2줄, 남는 높이의 가운데에 */
 .game { --accent: var(--amber); display: flex; flex-direction: column; min-width: 0; border-radius: 26px; overflow: hidden; background: var(--surface); border: 1px solid var(--line);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35); transition: transform 120ms, border-color 120ms; }
 .game:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
 .g-gd { --accent: var(--amber); }
 .g-flappy { --accent: var(--mint); }
 .g-adofai { --accent: var(--violet); }
-.art { position: relative; height: 0; padding-bottom: 56.25%; flex: none; } /* 16:9, 카드 그림(1200×675, 1000×562)이 잘리지 않게 */
+.art { position: relative; height: 0; padding-bottom: 46%; flex: none; } /* 카드 그림(16:9)의 가운데를 조금 잘라 두 줄이 들어가게 */
 .art svg, .art .cover { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .art .cover { object-fit: cover; object-position: center 40%; }
 .tag { position: absolute; right: 12px; top: 12px; white-space: nowrap; height: 32px; line-height: 32px; padding: 0 14px; border-radius: 16px; background: rgba(10, 14, 30, 0.6); color: #DDE6FF; font-size: 15px; font-weight: 700; }
-.body { flex: 1 1 auto; padding: 16px 14px 18px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
-h2 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 24px; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; white-space: nowrap; }
-.row { display: flex; align-items: center; gap: 16px; height: 48px; }
-.row label { width: 54px; flex: none; font-size: 16px; font-weight: 700; color: var(--sub); white-space: nowrap; }
+.body { flex: 1 1 auto; padding: 14px 18px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+h2 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 28px; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; white-space: nowrap; }
+.row { display: flex; align-items: center; gap: 12px; height: 44px; }
+.row label { width: 66px; flex: none; font-size: 17px; font-weight: 700; color: var(--sub); white-space: nowrap; }
 .keychip { flex: 1 1 0; min-width: 0; height: 44px; font-size: 17px; border-radius: 12px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 16px;
   background: var(--inset); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-bottom-width: 4px; color: var(--accent); font-size: 22px; font-weight: 700; letter-spacing: 0.4px; }
 .keychip:hover { background: color-mix(in srgb, var(--accent) 10%, var(--inset)); }
 .keychip.listen { background: color-mix(in srgb, var(--accent) 24%, transparent); color: var(--text); }
 .keychip.bad { border-color: var(--coral); color: var(--coral); }
-.start { margin-top: 6px; height: 68px; white-space: nowrap; border: 0; border-radius: 18px; cursor: pointer; font-family: var(--font-title); font-size: 34px; color: #1A1408;
+.start { margin-top: 4px; height: 58px; white-space: nowrap; border: 0; border-radius: 18px; cursor: pointer; font-family: var(--font-title); font-size: 30px; color: #1A1408;
   background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 100%, #fff 18%) 0%, var(--accent) 100%); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 30%, transparent); }
 .start:hover { filter: brightness(1.06); }
 .start:active { transform: translateY(2px); }
 
-.force { margin-bottom: auto; display: flex; align-items: center; gap: 22px; height: 104px; flex: none; padding: 0 30px; border-radius: 22px; background: var(--surface); border: 1px solid var(--line); }
-.f-label { font-family: var(--font-title); font-size: 28px; white-space: nowrap; flex: none; }
-.meter { position: relative; flex: 1 1 0; height: 26px; border-radius: 13px; background: var(--inset); border: 1px solid var(--line); }
+.force { flex: 1 1 0; min-width: 0; margin: 0 32px; display: flex; align-items: center; gap: 18px; height: 60px; padding: 0 22px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
+.f-label { font-family: var(--font-title); font-size: 24px; white-space: nowrap; flex: none; }
+.meter { position: relative; flex: 1 1 0; height: 20px; border-radius: 10px; background: var(--inset); border: 1px solid var(--line); }
 .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 13px; background: linear-gradient(90deg, #5E8FD6, var(--sky)); transition: width 60ms linear; }
 .meter.on .fill { background: linear-gradient(90deg, var(--sky), var(--coral)); box-shadow: 0 0 16px rgba(255, 143, 143, 0.6); }
 .tick { position: absolute; top: -8px; bottom: -8px; left: 50%; width: 4px; margin-left: -2px; border-radius: 2px; background: var(--amber); }
-.f-num { width: 120px; flex: none; text-align: right; font-size: 46px; font-weight: 700; color: var(--sky); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.f-num { width: 90px; flex: none; text-align: right; font-size: 34px; font-weight: 700; color: var(--sky); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .f-num.on { color: var(--coral); }
 .f-num.off { color: var(--dim); }
 .esc { position: absolute; left: 56px; bottom: 10px; font-size: 15px; font-weight: 700; color: var(--dim); }
@@ -65,3 +65,5 @@ button.tag:hover { filter: brightness(1.08); }
 .row.two .keychip { font-size: 14px; padding: 0 6px; letter-spacing: 0; }
 .g-stack { --accent: var(--sky); }
 .g-breakout { --accent: var(--amber); }
+.g-copter { --accent: var(--coral); }
+.g-copter .start { background: linear-gradient(180deg, #FFB37A 0%, #FF8A4C 100%); }

@@ -12,6 +12,8 @@ SpikerBox Pro(근전도)의 신호를 게임 화면 위에 파형으로 띄우�
 - `Space Invaders`는 오픈소스 [trungvose/space-invaders-phaser-3](https://github.com/trungvose/space-invaders-phaser-3)(MIT, Phaser 3)를 앱에 넣은 것입니다. 약하게 쥐면 왼쪽, 세게 쥐면 오른쪽으로 움직이고 발사는 자동입니다. 카드에서 약·강 키를 따로 정할 수 있습니다.
 - `Stack`은 오픈소스 [zurkon/playstack](https://github.com/zurkon/playstack)(MIT, Three.js)을 넣은 것입니다. 움직이는 블록이 아래 층 위에 왔을 때 힘을 주면 놓입니다.
 - `벽돌깨기`는 오픈소스 [toji/spookyball](https://github.com/toji/spookyball)(MIT, WebGPU)을 넣은 것입니다. 약하게 쥐면 왼쪽, 세게 쥐면 오른쪽으로 움직이고, 움직이면 공도 발사됩니다. WebGPU를 지원하는 그래픽이 필요합니다.
+- `Helicopter Game`은 [orangespaceman/js-canvas-copter](https://github.com/orangespaceman/js-canvas-copter)(WTFPL)의 물리에 [Kenney Tappy Plane](https://kenney.nl/assets/tappy-plane)(CC0) 그림을 입힌 것입니다. 힘을 주는 동안 올라가고, 바위를 피하며 별을 모읍니다.
+- 사용자 화면은 게임 카드가 4칸씩 두 줄이고, `지금 힘` 막대는 맨 위 줄에 있습니다.
 - `Ctrl+D`를 누르면 관리자 화면(아래 설명)으로 가고, 거기서 다시 `Ctrl+D`를 누르면 돌아옵니다. 트레이 메뉴에서도 바꿀 수 있습니다.
 
 ## 관리자 화면 사용
