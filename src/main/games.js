@@ -34,6 +34,9 @@ const GAMES = [
     levels: 2, mode: 'hold', defaultKey: 'ArrowLeft', defaultKey2: 'ArrowRight', online: false },
   // 스택: zurkon/playstack (MIT, Three.js, games/stack/SOURCE.md). 힘을 줄 때마다 블록 하나를 놓는다.
   { id: 'stack', name: 'Stack', file: 'games/stack/index.html', mode: 'tap', defaultKey: 'Space', online: false },
+  // 벽돌깨기: toji/spookyball (MIT, WebGPU, games/breakout/SOURCE.md). 2단계: 약하게 = ←, 세게 = →, 움직이면 공도 발사된다.
+  { id: 'breakout', name: '벽돌깨기', file: 'games/breakout/index.html', levels: 2, mode: 'hold',
+    defaultKey: 'ArrowLeft', defaultKey2: 'ArrowRight', online: false },
 ];
 
 // 게임 안에서 나가기(Esc)와 겹치는 키는 고를 수 없다

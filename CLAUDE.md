@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-## 상태: v1.7.0
+## 상태: v1.8.0
 
 Python/tkinter 판을 Electron으로 새로 만들었다. 단위 시험·실제 SendInput 시험·화면 넘침 검사·exe 실행 확인은 끝났다. **실제 SpikerBox를 꽂은 상태의 확인(힘 줄 때 키 눌림, 케이블 분리 시 키 해제)과 실제 게임 위 오버레이는 아직 안 했다** (개발 중 장치가 없었다).
 
@@ -26,6 +26,7 @@ npm run build:win        # dist/emg-waveform-overlay.exe
 - v1.5: 세 번째 게임 `adofai`(얼음과 불의 춤, Steam app 977950, 사용자가 정식판을 깔았다). `games.js` 의 `native: true` 게임은 앱 창이 아니라 Windows 프로그램: `winfocus.js`(koffi: `FindWindowW` 로 제목 `A Dance of Fire and Ice` 를 찾고, 앞 창 스레드에 `AttachThreadInput` + Alt 키를 눌러 `SetForegroundWindow`)로 앞으로 가져오고 키는 SendInput. 꺼져 있으면 `steam://rungameid/977950` 로 켜고 창이 뜰 때까지 90초 기다린다. 돌아오기는 게임 중에만 전역 `Ctrl+Q`(게임이 Esc 를 일시정지로 써서), 게임은 끄지 않고 둔다(미리 켜 두기, 카드의 `미리 켜기` → 창이 뜨면 사용자 화면을 다시 앞으로). 1초마다 창이 있는지 보고, 하는 중에 게임이 꺼지면 사용자 화면으로 돌아온다. 사용자 화면은 카드 3칸(그림 칸 16:9), 얼불춤 카드 그림은 사용자가 준 `images/adofai-card.png`. 실측: 시작 → 얼불춤이 앞으로 오고 오버레이가 위에 뜸, Ctrl+Q → 사용자 화면, 게임은 계속 켜져 있음. 아직: 꺼진 상태에서 Steam 으로 켜기·미리 켜기(사용자가 게임을 켜 둔 상태라 못 해 봄), 실제 근육으로 박자 맞추기(입력 지연은 게임 안 오프셋으로).
 - v1.6: 네 번째 게임 `invaders` = trungvose/space-invaders-phaser-3 (MIT, Phaser 3.22). 사용자가 "직접 만든 싸구려 말고 공개 리포"를 원해서, 처음 넣은 dwmkerr/spaceinvaders(사각형 그래픽)를 이것으로 바꿨다. 리포에 빌드 파일이 없어 `src/` 를 고친 뒤 리포 방식(`npm ci`, `npm run build`)으로 만든 `game.js` 를 넣었다 (고친 곳은 `games/invaders/SOURCE.md`: 자동 발사, ←/→ 로 새 게임, 끝난 뒤 1.5초 무시, `/assets` → `assets`, 안내 글). 2단계 게임이라 `games.js` 의 `levels: 2`, 사용자 설정 `user.keys2`(세게 키, 약하게 키와 같거나 Esc 면 기본값). 카드 그림은 게임 화면을 잘라 만든 `images/invaders-card.png`. 사용자 화면은 카드 4칸, 카드 높이는 내용에 맞추고 카드+힘 막대를 세로 가운데.
 - v1.7: 다섯 번째 게임 `stack` = zurkon/playstack (MIT, React + Three.js + cannon.js, Ketchapp STACK 클론). 리포 `src/` 를 고친 뒤 `vite build --base=./` 한 `dist/` 를 넣었다 (고친 곳은 `games/stack/SOURCE.md`: 아무 키로도 놓기, 속도 0.15→0.09, 게임오버 뒤 1.2초 무시, z 방향 블록도 떨어지게, 한국어 안내). `file://` 에서 ES 모듈이 문제없이 뜬다. 사용자 화면은 카드 5칸이고 카드 그림은 모두 실제 게임 화면(또는 사용자가 준 그림)을 16:9 로 자른 이미지(`images/*-card.*`). Flappy 카드는 예전 픽셀 그림 조합(CSS)을 지우고 Get Ready 화면 캡처로 바꿨다.
+- v1.8: 여섯 번째 게임 `breakout`(벽돌깨기) = toji/spookyball (MIT, WebGPU 할로윈 벽돌깨기). 처음 본 budnix/ball-and-wall 은 Bower·Grunt 빌드가 필요하고 일부 그림이 유료라 뺐다. 라이브러리는 리포 lock 으로 `npm ci` 해서 필요한 파일만 `games/breakout/vendor/` 에 (이름을 node_modules 에서 바꿈), 인터넷이 필요한 Draco 디코더와 Creepster 글꼴은 같은 것을 받아 넣었다 (`SOURCE.md`). 2단계(약하게 ←, 세게 →), 움직이면 공 발사, 게임오버 뒤 아무 키로 Replay. 이 노트북(Intel Gen12)에서 WebGPU 확인. Bash 도구의 네트워크가 가끔 막혀서 `gh`·`npm` 은 PowerShell 로 돌렸다. 사용자 화면 카드 6칸.
 - 키는 `e.code`로 지정하고 `SendInput`을 스캔코드 방식으로 보낸다 (게임이 읽는 방식). 단축키는 Electron `globalShortcut`.
 - 역치는 직접 입력하거나 자동 설정(스코어보드 `calib.js` 기반)으로 정한다. 제안만 하고 `적용`을 눌러야 바뀐다.
 - 정지·신호 끊김(0.5초)·설정 변경·종료 때는 눌린 키를 반드시 뗀다.

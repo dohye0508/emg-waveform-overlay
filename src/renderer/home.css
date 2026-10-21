@@ -12,7 +12,7 @@ h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 46p
 .pill.ok { color: var(--text); }
 .pill.ok .dot { background: var(--mint); box-shadow: 0 0 10px var(--mint); }
 
-main { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; flex: none; margin-top: auto; } /* 카드 + 힘 막대를 남는 높이의 가운데에 */
+main { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; flex: none; margin-top: auto; } /* 카드 + 힘 막대를 남는 높이의 가운데에 */
 .game { --accent: var(--amber); display: flex; flex-direction: column; min-width: 0; border-radius: 26px; overflow: hidden; background: var(--surface); border: 1px solid var(--line);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35); transition: transform 120ms, border-color 120ms; }
 .game:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
@@ -23,16 +23,16 @@ main { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16p
 .art svg, .art .cover { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .art .cover { object-fit: cover; object-position: center 40%; }
 .tag { position: absolute; right: 12px; top: 12px; white-space: nowrap; height: 32px; line-height: 32px; padding: 0 14px; border-radius: 16px; background: rgba(10, 14, 30, 0.6); color: #DDE6FF; font-size: 15px; font-weight: 700; }
-.body { flex: 1 1 auto; padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
-h2 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 28px; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; white-space: nowrap; }
+.body { flex: 1 1 auto; padding: 16px 14px 18px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+h2 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 24px; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; white-space: nowrap; }
 .row { display: flex; align-items: center; gap: 16px; height: 48px; }
-.row label { width: 66px; flex: none; font-size: 18px; font-weight: 700; color: var(--sub); white-space: nowrap; }
-.keychip { flex: 1 1 0; min-width: 0; height: 48px; font-size: 19px; border-radius: 12px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 16px;
+.row label { width: 54px; flex: none; font-size: 16px; font-weight: 700; color: var(--sub); white-space: nowrap; }
+.keychip { flex: 1 1 0; min-width: 0; height: 44px; font-size: 17px; border-radius: 12px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 16px;
   background: var(--inset); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-bottom-width: 4px; color: var(--accent); font-size: 22px; font-weight: 700; letter-spacing: 0.4px; }
 .keychip:hover { background: color-mix(in srgb, var(--accent) 10%, var(--inset)); }
 .keychip.listen { background: color-mix(in srgb, var(--accent) 24%, transparent); color: var(--text); }
 .keychip.bad { border-color: var(--coral); color: var(--coral); }
-.start { margin-top: 6px; height: 76px; white-space: nowrap; border: 0; border-radius: 18px; cursor: pointer; font-family: var(--font-title); font-size: 34px; color: #1A1408;
+.start { margin-top: 6px; height: 68px; white-space: nowrap; border: 0; border-radius: 18px; cursor: pointer; font-family: var(--font-title); font-size: 34px; color: #1A1408;
   background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 100%, #fff 18%) 0%, var(--accent) 100%); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 30%, transparent); }
 .start:hover { filter: brightness(1.06); }
 .start:active { transform: translateY(2px); }
@@ -59,8 +59,9 @@ button.tag:hover { filter: brightness(1.08); }
 
 /* 스페이스 인베이더: 약하게(호박)·세게(산호) 키 칩 두 개 */
 .g-invaders { --accent: var(--coral); }
-.row.two { gap: 10px; }
+.row.two { gap: 8px; }
 .keychip.weak { --accent: var(--amber); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
 .keychip.strong { --accent: var(--coral); color: var(--coral); border-color: color-mix(in srgb, var(--coral) 45%, transparent); }
-.row.two .keychip { font-size: 16px; padding: 0 8px; letter-spacing: 0; }
+.row.two .keychip { font-size: 14px; padding: 0 6px; letter-spacing: 0; }
 .g-stack { --accent: var(--sky); }
+.g-breakout { --accent: var(--amber); }

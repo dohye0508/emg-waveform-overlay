@@ -11,6 +11,7 @@ SpikerBox Pro(근전도)의 신호를 게임 화면 위에 파형으로 띄우�
 - `얼음과 불의 춤`은 Steam에 깔린 정식 게임을 씁니다. 켜는 데 시간이 걸리니 카드의 `미리 켜기`로 먼저 켜 두면, `시작`을 누를 때 그 창을 바로 앞으로 가져옵니다(꺼져 있으면 Steam으로 켭니다). 이 게임은 Esc를 일시정지로 쓰므로 `Ctrl+Q`로 돌아오고, 돌아와도 게임은 켜 둔 채로 둡니다. 게임 설정에서 창 모드나 테두리 없는 창으로 두어야 오버레이가 보입니다.
 - `Space Invaders`는 오픈소스 [trungvose/space-invaders-phaser-3](https://github.com/trungvose/space-invaders-phaser-3)(MIT, Phaser 3)를 앱에 넣은 것입니다. 약하게 쥐면 왼쪽, 세게 쥐면 오른쪽으로 움직이고 발사는 자동입니다. 카드에서 약·강 키를 따로 정할 수 있습니다.
 - `Stack`은 오픈소스 [zurkon/playstack](https://github.com/zurkon/playstack)(MIT, Three.js)을 넣은 것입니다. 움직이는 블록이 아래 층 위에 왔을 때 힘을 주면 놓입니다.
+- `벽돌깨기`는 오픈소스 [toji/spookyball](https://github.com/toji/spookyball)(MIT, WebGPU)을 넣은 것입니다. 약하게 쥐면 왼쪽, 세게 쥐면 오른쪽으로 움직이고, 움직이면 공도 발사됩니다. WebGPU를 지원하는 그래픽이 필요합니다.
 - `Ctrl+D`를 누르면 관리자 화면(아래 설명)으로 가고, 거기서 다시 `Ctrl+D`를 누르면 돌아옵니다. 트레이 메뉴에서도 바꿀 수 있습니다.
 
 ## 관리자 화면 사용
