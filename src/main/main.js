@@ -4,6 +4,8 @@
 // 상태와 타이밍은 전부 여기에 있고, 화면(렌더러)은 payload 를 그리기만 한다.
 
 const path = require('path');
+// 앱 아이콘 (작업 표시줄·창·트레이). exe 아이콘은 assets/icon.ico (package.json build.win.icon)
+const APP_ICON = path.join(__dirname, '..', 'renderer', 'images', 'icon.png');
 const { pathToFileURL } = require('url');
 const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, screen, nativeImage, shell } = require('electron');
 const { HidInput } = require('./hidinput');
@@ -119,7 +121,7 @@ function updateOverlayVisibility() {
 function createSettings() {
   settingsWin = new BrowserWindow({
     width: 1280, height: 800, minWidth: 800, minHeight: 500, show: false, backgroundColor: '#070B14',
-    title: 'EMG Overlay', autoHideMenuBar: true,
+    title: 'EMG Overlay', autoHideMenuBar: true, icon: APP_ICON,
     webPreferences: { preload: path.join(__dirname, '..', 'preload.js'), contextIsolation: true, sandbox: true },
   });
   settingsWin.setMenu(null);
@@ -240,7 +242,7 @@ function playGame(id) {
   const disp = settingsWin ? screen.getDisplayMatching(settingsWin.getBounds()) : screen.getPrimaryDisplay();
   console.log('[game] 시작', id);
   const win = new BrowserWindow({
-    ...disp.bounds, show: false, fullscreen: true, autoHideMenuBar: true, backgroundColor: '#000000', title: game.name,
+    ...disp.bounds, show: false, fullscreen: true, autoHideMenuBar: true, backgroundColor: '#000000', title: game.name, icon: APP_ICON,
     // 게임 페이지(외부 사이트 포함)에는 앱 기능을 주지 않는다
     webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false },
   });
@@ -322,15 +324,7 @@ function registerHotkeys() {
 }
 
 function trayIcon() {
-  const size = 16;
-  const buf = Buffer.alloc(size * size * 4);
-  for (let i = 0; i < size * size; i++) {
-    const x = i % size, y = Math.floor(i / size);
-    const d = Math.hypot(x - 7.5, y - 7.5);
-    const on = d < 7;
-    buf[i * 4] = 0xf2; buf[i * 4 + 1] = 0xe0; buf[i * 4 + 2] = 0x35; buf[i * 4 + 3] = on ? 255 : 0; // BGRA
-  }
-  return nativeImage.createFromBitmap(buf, { width: size, height: size });
+  return nativeImage.createFromPath(APP_ICON).resize({ width: 16, height: 16, quality: 'best' });
 }
 
 function refreshTray() {

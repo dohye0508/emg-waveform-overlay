@@ -68,3 +68,7 @@ button.tag:hover { filter: brightness(1.08); }
 .g-copter { --accent: var(--coral); }
 .g-copter .start { background: linear-gradient(180deg, #FFB37A 0%, #FF8A4C 100%); }
 .g-jumper { --accent: var(--mint); }
+
+/* 배경 로고: 가운데 크게, 옅은 흰색 (클릭은 그대로 지나간다) */
+body::after { content: ''; position: fixed; inset: 0; z-index: 50; pointer-events: none;
+  background: url(images/logo.png) center 55% / 78vh auto no-repeat; opacity: 0.1; }
