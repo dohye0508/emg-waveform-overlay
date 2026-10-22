@@ -1,43 +1,97 @@
 # EMG Overlay
 
-SpikerBox Pro(근전도)의 신호를 게임 화면 위에 파형으로 띄우고, 근육에 힘을 주면 지정한 키가 눌리게 하는 Windows 앱입니다. Electron으로 만들었고 스코어보드(`festival_raibit`)와 같은 장치 읽기·필터 코드를 씁니다.
+근육에 힘을 주면 키가 눌리는 Windows 앱입니다. SpikerBox Pro로 근전도(EMG)를 읽어서, 힘이 역치를 넘으면 정해 둔 키나 마우스 버튼을 게임에 보냅니다. 게임 화면 위에는 지금 신호를 보여 주는 작은 파형 창(오버레이)이 항상 떠 있습니다.
 
-## 사용자 화면 (처음 켜면 나오는 화면)
+Electron으로 만들었고, 장치 읽기와 필터는 스코어보드(`festival_raibit`)와 같은 코드를 씁니다.
 
-- `Geometry Dash`와 `Flappy Bird` 중 하나를 골라 `시작`을 누르면 전체화면으로 게임이 뜨고, 힘을 주면 정한 키가 그 게임에 바로 들어갑니다.
-- 게임마다 `누를 키`를 정할 수 있습니다(키보드 키나 마우스 클릭).
-- 게임 중 `Esc`를 누르면 이 화면으로 돌아옵니다.
-- Geometry Dash는 RobTop Games의 공식 웹 데모(1단계)를 띄웁니다. Flappy Bird는 오픈소스 클론 [nebez/floppybird](https://github.com/nebez/floppybird)(Apache-2.0)를 앱에 넣은 것이라 오프라인에서도 되고, 파이프 틈이 넓은 쉬운 모드로 엽니다. 출처와 고친 곳은 `src/renderer/games/flappy/SOURCE.md`에 있습니다.
-- `얼음과 불의 춤`은 Steam에 깔린 정식 게임을 씁니다. 켜는 데 시간이 걸리니 카드의 `미리 켜기`로 먼저 켜 두면, `시작`을 누를 때 그 창을 바로 앞으로 가져옵니다(꺼져 있으면 Steam으로 켭니다). 이 게임은 Esc를 일시정지로 쓰므로 `Ctrl+Q`로 돌아오고, 돌아와도 게임은 켜 둔 채로 둡니다. 게임 설정에서 창 모드나 테두리 없는 창으로 두어야 오버레이가 보입니다.
-- `Space Invaders`는 오픈소스 [trungvose/space-invaders-phaser-3](https://github.com/trungvose/space-invaders-phaser-3)(MIT, Phaser 3)를 앱에 넣은 것입니다. 약하게 쥐면 왼쪽, 세게 쥐면 오른쪽으로 움직이고 발사는 자동입니다. 카드에서 약·강 키를 따로 정할 수 있습니다.
-- `Stack`은 오픈소스 [zurkon/playstack](https://github.com/zurkon/playstack)(MIT, Three.js)을 넣은 것입니다. 움직이는 블록이 아래 층 위에 왔을 때 힘을 주면 놓입니다.
-- `벽돌깨기`는 오픈소스 [toji/spookyball](https://github.com/toji/spookyball)(MIT, WebGPU)을 넣은 것입니다. 약하게 쥐면 왼쪽, 세게 쥐면 오른쪽으로 움직이고, 움직이면 공도 발사됩니다. WebGPU를 지원하는 그래픽이 필요합니다.
-- `Helicopter Game`은 [orangespaceman/js-canvas-copter](https://github.com/orangespaceman/js-canvas-copter)(WTFPL)의 물리에 [Kenney Tappy Plane](https://kenney.nl/assets/tappy-plane)(CC0) 그림을 입힌 것입니다. 힘을 주는 동안 올라가고, 바위를 피하며 별을 모읍니다.
-- `Bunny Jump`는 [ourcade/infinite-jumper-template-phaser3](https://github.com/ourcade/infinite-jumper-template-phaser3)(MIT, Phaser 3)에 [Kenney Jumper Pack](https://kenney.nl/assets/jumper-pack)(CC0) 그림을 입힌 것입니다. 토끼가 저절로 계속 뛰고, 약하게 쥐면 왼쪽, 세게 쥐면 오른쪽으로 움직여 구름과 발판을 밟고 올라갑니다. 떨어지면 끝입니다.
-- 사용자 화면은 게임 카드가 4칸씩 두 줄이고, `지금 힘` 막대는 맨 위 줄에 있습니다.
-- `Ctrl+D`를 누르면 관리자 화면(아래 설명)으로 가고, 거기서 다시 `Ctrl+D`를 누르면 돌아옵니다. 트레이 메뉴에서도 바꿀 수 있습니다.
+![게임 위에 고정된 오버레이](docs/images/overlay-on-game.jpg)
 
-## 관리자 화면 사용
+*Space Invaders를 하는 중. 오른쪽 위 작은 창이 오버레이입니다. 지금 힘, 눌리는 키(LEFT·RIGHT), 파형, 역치 막대를 보여 줍니다.*
 
-1. SpikerBox를 USB로 연결하고 `emg-waveform-overlay.exe`를 실행합니다.
-2. 오른쪽 위 `가동 시작`을 누르거나 `Ctrl+1`을 누르면 오버레이가 화면 위에 고정되고 키 입력이 켜집니다. `Ctrl+2`는 오버레이 숨김/표시입니다. 버튼 안의 단축키 칩을 누르고 다른 키를 치면 단축키가 바뀝니다.
-3. `역치 자동 설정`에서 쉬기 4초, 준비 2초, 힘주기 4초를 하면 이 컴퓨터·이 사람에게 맞는 역치를 제안합니다. `적용`을 눌러야 바뀝니다.
-4. `시험 모드`를 켜면 키는 보내지 않고 오버레이의 키 칩만 반응합니다. 먼저 이걸로 확인하세요.
+## 빠르게 시작하기
 
-## 설정
+1. SpikerBox를 USB로 연결하고 [Releases](https://github.com/dohye0508/emg-waveform-overlay/releases/latest)에서 받은 `emg-waveform-overlay.exe`를 실행합니다. 설치는 필요 없습니다.
+2. 처음 나오는 **사용자 화면**에서 게임 카드의 `시작`을 누릅니다.
+3. 근육에 힘을 주면 게임이 움직입니다. 게임 중 `Esc`를 누르면 사용자 화면으로 돌아옵니다.
+4. 키가 너무 쉽게 눌리거나 잘 안 눌리면 `Ctrl+D`로 **관리자 화면**에 가서 `역치 자동 설정`을 합니다.
 
-- 연속값(역치, 크기, 위치, 투명도, 표시 시간 등)은 슬라이더와 숫자 입력으로 정합니다.
-- `오버레이` 칸의 `끌어서 정하기`: 오버레이를 실제 화면에서 끌고 모서리로 크기를 조절한 뒤 `끌기 끝내기`.
-- 키·단축키 칸을 누르고 원하는 키를 치면 저장됩니다. `누를 키` 칸은 마우스 버튼(왼쪽·오른쪽·가운데·뒤로·앞으로)도 됩니다. 칸을 누른 뒤 원하는 버튼을 클릭하세요. 약하게 = 왼쪽 클릭, 세게 = 오른쪽 클릭 같은 조합도 됩니다.
-- 방식 `누르는 동안`은 힘을 주는 동안 키를 누르고 있고, `한 번만`은 힘을 줄 때마다 한 번 눌렀다 뗍니다.
-- `2단계 (약·강)`: 힘을 조금 주면 첫 번째 키(예: ←), 많이 주면 두 번째 키(예: →)가 눌립니다. `역치` 칸의 `약하게`·`세게`로 경계를 정하고, `타이밍` 칸의 `판정 시간`(기본 150 ms) 동안 세게까지 오르는지 기다렸다가 약하게 키를 누릅니다. 세게에서 힘을 빼며 내려올 때는 약하게 키가 눌리지 않습니다.
-- 프리셋 `1 · 2 · 3`: 고른 칸에 설정이 자동으로 저장되고, 다른 칸을 누르면 그 칸 설정으로 바뀝니다. 빈 칸을 누르면 지금 설정에서 시작합니다. 단축키는 모든 프리셋이 같습니다.
-- 설정은 `%APPDATA%\EMG Overlay\settings.json`에 저장됩니다.
+## 사용자 화면
+
+![사용자 화면](docs/images/home.png)
+
+- 처음 켜면 나오는 화면입니다. 게임 카드가 4칸씩 두 줄로 있고, 맨 위 `지금 힘` 막대에 근육 신호가 실시간으로 나옵니다(노란 세로선이 역치).
+- 카드마다 `누를 키`를 바꿀 수 있습니다. 칸을 누르고 원하는 키를 치거나 마우스 버튼을 누르세요.
+- `약 · LEFT` / `강 · RIGHT`처럼 칸이 두 개인 게임은 **2단계** 게임입니다. 힘을 조금 주면 왼쪽 키, 세게 주면 오른쪽 키가 눌립니다.
+- `Ctrl+D`를 누르면 관리자 화면으로 가고, 다시 `Ctrl+D`를 누르면 돌아옵니다. 트레이 메뉴에서도 바꿀 수 있습니다.
+
+## 게임
+
+| | | |
+|:-:|:-:|:-:|
+| ![Bunny Jump](docs/images/game-jumper.jpg) | ![Helicopter Game](docs/images/game-copter.jpg) | ![Space Invaders](docs/images/game-invaders.jpg) |
+| **Bunny Jump** | **Helicopter Game** | **Space Invaders** |
+| ![Stack](docs/images/game-stack.jpg) | ![벽돌깨기](docs/images/game-breakout.jpg) | ![Flappy Bird](docs/images/game-flappy.jpg) |
+| **Stack** | **벽돌깨기** | **Flappy Bird** |
+
+| 게임 | 조작 | 출처 (라이선스) |
+|---|---|---|
+| Geometry Dash | 힘을 주면 점프 | RobTop Games 공식 웹 데모 (인터넷 필요) |
+| Flappy Bird | 힘을 줄 때마다 날갯짓. 파이프 틈이 넓은 쉬운 모드 | [nebez/floppybird](https://github.com/nebez/floppybird) (Apache-2.0) |
+| 얼음과 불의 춤 | 박자에 맞춰 힘주기 | Steam 정식판 (아래 설명) |
+| Space Invaders | 약하게 = 왼쪽, 세게 = 오른쪽. 발사는 자동 | [trungvose/space-invaders-phaser-3](https://github.com/trungvose/space-invaders-phaser-3) (MIT) |
+| Stack | 블록이 아래 층 위에 왔을 때 힘주기 | [zurkon/playstack](https://github.com/zurkon/playstack) (MIT) |
+| 벽돌깨기 | 약하게 = 왼쪽, 세게 = 오른쪽. 움직이면 공 발사. WebGPU 필요 | [toji/spookyball](https://github.com/toji/spookyball) (MIT) |
+| Helicopter Game | 힘을 주는 동안 올라감. 바위를 피하고 별을 모음 | [orangespaceman/js-canvas-copter](https://github.com/orangespaceman/js-canvas-copter) (WTFPL) + [Kenney Tappy Plane](https://kenney.nl/assets/tappy-plane) (CC0) |
+| Bunny Jump | 토끼가 저절로 뜀. 약하게 = 왼쪽, 세게 = 오른쪽. 떨어지면 끝 | [ourcade/infinite-jumper-template-phaser3](https://github.com/ourcade/infinite-jumper-template-phaser3) (MIT) + [Kenney Jumper Pack](https://kenney.nl/assets/jumper-pack) (CC0) |
+
+- Geometry Dash와 얼음과 불의 춤을 뺀 게임은 앱 안에 들어 있어서 인터넷 없이도 됩니다. 게임마다 출처와 고친 곳은 `src/renderer/games/<게임>/SOURCE.md`에 있습니다.
+- **얼음과 불의 춤**은 Steam에 깔린 정식 게임을 씁니다. 켜는 데 시간이 걸리니 카드의 `미리 켜기`로 먼저 켜 두면, `시작`을 누를 때 그 창을 바로 앞으로 가져옵니다(꺼져 있으면 Steam으로 켭니다). 이 게임은 Esc를 일시정지로 쓰므로 `Ctrl+Q`로 돌아오고, 돌아와도 게임은 켜 둔 채로 둡니다. 게임 설정에서 창 모드나 테두리 없는 창으로 두어야 오버레이가 보입니다.
+
+## 오버레이
+
+<img src="docs/images/overlay.png" alt="오버레이" width="420">
+
+- 게임이나 다른 프로그램 위에 항상 떠 있는 작은 창입니다. 마우스 클릭은 아래 창으로 그대로 지나갑니다.
+- 왼쪽 위 점은 장치 연결 상태(초록 = 연결됨), 그 옆 칩은 누를 키입니다. 키가 눌리면 칩이 빨갛게(2단계 약하게는 노랗게) 켜집니다.
+- 오른쪽 위 숫자는 지금 힘, 가운데는 최근 파형, 아래 막대는 지금 힘과 역치(세로 눈금)입니다.
+- 위치·크기·투명도는 관리자 화면 `신호 · 오버레이` 탭에서 바꿉니다. `Ctrl+2`로 숨기거나 다시 보일 수 있습니다.
+
+## 관리자 화면
+
+`Ctrl+D`로 엽니다. 위쪽 **실시간 화면**(파형, 힘 그래프, 지금 힘, `가동 시작` 버튼)은 늘 보이고, 아래 설정은 탭 세 개로 나뉘어 있습니다. 칸마다 아래쪽에 짧은 설명이 있습니다.
+
+- `가동 시작`(`Ctrl+1`): 오버레이를 띄우고 키 입력을 켭니다. 사용자 화면에서 게임을 시작하면 자동으로 켜집니다.
+- `시험 모드`: 키는 보내지 않고 화면의 키 칩만 반응합니다. 처음에는 이걸로 확인하세요.
+- 버튼 안의 단축키 칩(`Ctrl+1`, `Ctrl+2`)을 누르고 다른 키를 치면 단축키가 바뀝니다.
+- 위쪽의 `1 · 2 · 3`은 프리셋입니다. 고른 칸에 설정이 자동으로 저장되고, 다른 칸을 누르면 그 칸 설정으로 바뀝니다. 빈 칸을 누르면 지금 설정에서 시작합니다. 단축키는 모든 프리셋이 같습니다.
+
+### 역치 탭
+
+![관리자 화면 - 역치](docs/images/admin-1.png)
+
+- **역치**: 지금 힘이 이 값을 넘으면 키가 눌리고, 역치 × `해제 비율` 아래로 내려가면 떼집니다. 2단계에서는 `약하게`·`세게` 두 값이 있습니다. 위 힘 그래프의 가로선이 역치입니다.
+- **역치 자동 설정**: `시작`을 누르고 안내대로 4초 쉬고, 2초 준비한 뒤, 4초 동안 힘껏 쥡니다. 이 사람·이 장소에 맞는 역치를 제안하고, `적용`을 눌러야 바뀝니다. `민감도`가 높을수록 역치가 낮아집니다.
+
+### 키 · 타이밍 탭
+
+![관리자 화면 - 키·타이밍](docs/images/admin-2.png)
+
+- **근육 → 키**: `1단계` / `2단계 (약·강)`, 누를 키(키보드 키나 마우스 왼쪽·오른쪽·가운데·뒤로·앞으로 버튼), 방식을 정합니다. `누르는 동안`은 힘을 주는 동안 키를 누르고 있고, `한 번만`은 힘줄 때마다 한 번 눌렀다 뗍니다.
+- **타이밍**: `반응 속도`는 힘을 재는 구간입니다(짧을수록 빠르지만 흔들림). `판정 시간`(2단계, 기본 150 ms) 동안 세게까지 오르는지 기다렸다가 약하게 키를 누르고, 세게에서 힘을 빼며 내려올 때는 약하게 키가 눌리지 않습니다. `누름 시간`·`쿨다운`은 `한 번만` 방식에서 씁니다. `3초 뒤 키 테스트`로 키가 실제로 들어가는지 볼 수 있습니다.
+
+### 신호 · 오버레이 탭
+
+![관리자 화면 - 신호·오버레이](docs/images/admin-3.png)
+
+- **신호**: 전극이 꽂힌 채널, 전기 주파수(한국은 60 Hz), 위 파형의 세로 범위.
+- **오버레이**: 크기, 위치, 투명도, 파형 표시 시간. `끌어서 정하기`를 누르면 실제 화면에서 오버레이를 끌어 옮기고 모서리로 크기를 바꿀 수 있습니다(`끌기 끝내기`로 마침). 모니터가 둘 이상이면 어느 화면에 띄울지 고를 수 있습니다.
+
+설정은 `%APPDATA%\EMG Overlay\settings.json`에 저장됩니다.
 
 ## 한계
 
 - 독점 전체화면(exclusive fullscreen)에서는 Windows가 어떤 오버레이도 그릴 수 없습니다. 테두리 없는 전체화면에서는 보입니다.
-- 관리자 권한으로 실행된 게임에는 키가 들어가지 않습니다. 이 앱도 관리자 권한으로 실행하세요.
+- 관리자 권한으로 실행된 게임에는 키가 들어가지 않습니다. 그럴 때는 이 앱도 관리자 권한으로 실행하세요.
 - SpikerBox는 한 번에 한 프로그램만 열 수 있습니다. 스코어보드·Spike Recorder와 동시에 쓸 수 없습니다.
 
 ## 개발
@@ -50,4 +104,7 @@ npm run test:keys      # 실제 SendInput 시험 (시험 중 키보드를 건드
 npm run build:win      # dist/emg-waveform-overlay.exe
 ```
 
-서명 도구의 심볼릭 링크 권한이 없는 PC에서는 `npx electron-builder --win portable --x64 -c.win.signAndEditExecutable=false`로 빌드합니다. 화면 넘침 검사는 앱을 `--remote-debugging-port=9333`으로 띄운 뒤 `node test/layout.check.js 9333`.
+- 장치 없이 해 보려면 `npx electron . --demo`(가짜 근전도 신호)로 띄웁니다.
+- 서명 도구의 심볼릭 링크 권한이 없는 PC에서는 `npx electron-builder --win portable --x64 -c.win.signAndEditExecutable=false`로 빌드합니다.
+- 화면 넘침 검사: 앱을 `--remote-debugging-port=9333`으로 띄운 뒤 `node test/layout.check.js 9333 [캡처 폴더] [index.html|home.html]`. 관리자 화면은 탭마다 검사합니다.
+- README 사진은 `docs/images/`에 있습니다.

@@ -184,7 +184,8 @@ export default class Game extends Phaser.Scene
 		const begin = () => {
 			if (this.started) return
 			this.started = true
-			this.startUi.forEach((t) => { this.tweens.killTweensOf(t); this.tweens.add({ targets: t, alpha: 0, y: t.y - 40, duration: 300, onComplete: () => t.destroy() }) })
+			// 안내 글은 바로 지운다 (반복 트윈을 멈추고 새 트윈을 거는 방식은 3.55 에서 글이 남는 경우가 있었다)
+			this.startUi.forEach((t) => { this.tweens.killTweensOf(t); t.destroy() })
 			this.physics.resume()
 			this.player.setVelocityY(JUMP)
 			this.sound.play('jump', { volume: 0.35 })

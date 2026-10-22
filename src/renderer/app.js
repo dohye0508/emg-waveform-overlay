@@ -37,17 +37,55 @@ function el(tag, cls, text) {
   return e;
 }
 
+// 설정은 탭(페이지)으로 나눈다. 위쪽 실시간 화면은 모든 탭에서 그대로 보인다.
+const pages = [];
+let curPage = null;
+
+function svgIcon(icon) {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICONS[icon] + '</svg>';
+}
+
+function page(id, color, icon, title, sub) {
+  const p = el('div', 'page');
+  p.dataset.id = id;
+  $('#pages').appendChild(p);
+  const t = el('button', 'tab c-' + color);
+  const badge = el('span', 'badge');
+  badge.innerHTML = svgIcon(icon);
+  const txt = el('span', 'tab-text');
+  txt.append(el('span', 'tab-title', title), el('span', 'tab-sub', sub));
+  t.append(badge, txt);
+  t.addEventListener('click', () => showPage(id));
+  $('#tabs').appendChild(t);
+  pages.push({ id, p, t });
+  curPage = p;
+  return p;
+}
+
+function showPage(id) {
+  if (!pages.some((x) => x.id === id)) id = pages[0].id;
+  pages.forEach((x) => { x.p.hidden = x.id !== id; x.t.classList.toggle('on', x.id === id); });
+  try { localStorage.setItem('adminPage', id); } catch (e) { /* 저장 못 해도 괜찮다 */ }
+}
+
 function card(color, icon, title) {
   const c = el('section', 'card c-' + color);
   const head = el('div', 'card-head');
   const badge = el('div', 'badge');
-  badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICONS[icon] + '</svg>';
+  badge.innerHTML = svgIcon(icon);
   const actions = el('div', 'head-actions');
   head.append(badge, el('h2', null, title), actions);
   c.appendChild(head);
-  $('#grid').appendChild(c);
+  curPage.appendChild(c);
   c.actions = actions;
   return c;
+}
+
+/** 칸 아래쪽의 짧은 설명 */
+function hint(parent, text) {
+  const h = el('p', 'hint');
+  h.innerHTML = text;
+  parent.appendChild(h);
 }
 
 function row(parent, label, cls) {
@@ -183,28 +221,16 @@ function setHotkey(field) {
 function build() {
   const twoLv = () => S.settings.key.levels === 2;
 
-  // ── 1단 ──
+  let r;
+  page('threshold', 'amber', 'threshold', '역치', '언제 키가 눌릴지');
   let k = card('amber', 'threshold', '역치');
   const thRow = slider(k, '역치', ['trigger', 'threshold'], 0.5, 100, 0.1, 1);
   slider(k, '세게', ['trigger', 'threshold2'], 0.5, 150, 0.1, 1, twoLv);
   slider(k, '해제 비율', ['trigger', 'releaseRatio'], 0.4, 0.95, 0.01, 2);
   syncers.push(() => { thRow.firstChild.textContent = twoLv() ? '약하게' : '역치'; });
 
-  k = card('coral', 'key', '근육 → 키');
-  seg(k, '단계', [{ label: '1단계', value: 1 }, { label: '2단계 (약·강)', value: 2 }], () => S.settings.key.levels, (v) => window.api.patch({ key: { levels: v } }));
-  let r = row(k, '누를 키');
-  const c1 = keyCapture(el('button', 'keychip'), () => (twoLv() ? '약 · ' : '') + S.keys.label, setKey('code'), true);
-  const c2 = keyCapture(el('button', 'keychip strong'), () => '강 · ' + S.keys.label2, setKey('code2'), true);
-  r.append(c1, c2);
-  syncers.push(() => { c2.hidden = !twoLv(); c1.classList.toggle('weak', twoLv()); });
-  seg(k, '방식', [{ label: '누르는 동안', value: 'hold' }, { label: '한 번만', value: 'tap' }], () => S.settings.key.mode, (v) => window.api.patch({ key: { mode: v } }));
+  hint(k, '<b>지금 힘</b>이 역치를 넘으면 키가 눌리고, 역치 × 해제 비율 아래로 내려가면 떼집니다. 2단계에서는 <b>세게</b>를 넘으면 두 번째 키가 눌립니다. 위 그래프의 가로선이 역치입니다.');
 
-  k = card('sky', 'signal', '신호');
-  seg(k, '채널', [{ label: '1', value: 1 }, { label: '2', value: 2 }], () => S.settings.signal.channel, (v) => window.api.patch({ signal: { channel: v } }));
-  seg(k, '전원', [{ label: '60 Hz', value: 60 }, { label: '50 Hz', value: 50 }], () => S.settings.signal.mainsHz, (v) => window.api.patch({ signal: { mainsHz: v } }));
-  slider(k, '세로 범위', ['signal', 'scale'], 20, 600, 1, 0);
-
-  // ── 2단 ──
   k = card('amber', 'auto', '역치 자동 설정');
   const cs = el('button', 'btn', '시작');
   cs.addEventListener('click', () => (S.cal.phase !== 'off' && S.cal.phase !== 'done' ? window.api.calCancel() : window.api.calStart()));
@@ -267,6 +293,20 @@ function build() {
     ap.disabled = !(res && res.ok && sg);
   });
 
+  hint(k, '<b>시작</b>을 누르고 안내대로 4초 쉬고, 2초 준비한 뒤, 4초 동안 힘껏 쥡니다. 민감도가 높을수록 역치가 낮아집니다. <b>적용</b>을 눌러야 바뀝니다.');
+
+  page('key', 'coral', 'key', '키 · 타이밍', '어떤 키를 어떻게');
+  k = card('coral', 'key', '근육 → 키');
+  seg(k, '단계', [{ label: '1단계', value: 1 }, { label: '2단계 (약·강)', value: 2 }], () => S.settings.key.levels, (v) => window.api.patch({ key: { levels: v } }));
+  r = row(k, '누를 키');
+  const c1 = keyCapture(el('button', 'keychip'), () => (twoLv() ? '약 · ' : '') + S.keys.label, setKey('code'), true);
+  const c2 = keyCapture(el('button', 'keychip strong'), () => '강 · ' + S.keys.label2, setKey('code2'), true);
+  r.append(c1, c2);
+  syncers.push(() => { c2.hidden = !twoLv(); c1.classList.toggle('weak', twoLv()); });
+  seg(k, '방식', [{ label: '누르는 동안', value: 'hold' }, { label: '한 번만', value: 'tap' }], () => S.settings.key.mode, (v) => window.api.patch({ key: { mode: v } }));
+
+  hint(k, '키 칸을 누른 뒤 원하는 키나 마우스 버튼을 누르세요. <b>누르는 동안</b>은 힘을 주는 동안 계속 누르고, <b>한 번만</b>은 힘줄 때마다 한 번 눌렀다 뗍니다.');
+
   k = card('coral', 'timing', '타이밍');
   slider(k, '반응 속도', ['trigger', 'windowMs'], 25, 200, 5, 0);
   slider(k, '판정 시간', ['key', 'decideMs'], 0, 500, 10, 0, twoLv);
@@ -277,6 +317,16 @@ function build() {
   kt.addEventListener('click', () => window.api.keyTest());
   r.appendChild(kt);
   syncers.push(() => { kt.disabled = !S.keys.available; });
+
+  hint(k, '<b>반응 속도</b>는 힘을 재는 구간(ms)으로, 짧을수록 빠르지만 흔들립니다. <b>판정 시간</b>은 2단계에서 세게까지 오르는지 기다리는 시간, <b>누름 시간</b>·<b>쿨다운</b>은 한 번만 방식에서 씁니다.');
+
+  page('screen', 'sky', 'overlay', '신호 · 오버레이', '장치와 화면 표시');
+  k = card('sky', 'signal', '신호');
+  seg(k, '채널', [{ label: '1', value: 1 }, { label: '2', value: 2 }], () => S.settings.signal.channel, (v) => window.api.patch({ signal: { channel: v } }));
+  seg(k, '전원', [{ label: '60 Hz', value: 60 }, { label: '50 Hz', value: 50 }], () => S.settings.signal.mainsHz, (v) => window.api.patch({ signal: { mainsHz: v } }));
+  slider(k, '세로 범위', ['signal', 'scale'], 20, 600, 1, 0);
+
+  hint(k, '근전도 전극이 꽂힌 <b>채널</b>, 사는 곳의 전기 주파수(한국은 <b>60 Hz</b>), 위 파형의 <b>세로 범위</b>를 정합니다.');
 
   k = card('sky', 'overlay', '오버레이');
   const mon = el('div', 'seg small');
@@ -306,6 +356,12 @@ function build() {
   slider(k, '세로 위치', ['overlay', 'y'], 0, 100, 1, 0);
   slider(k, '투명도', ['overlay', 'opacity'], 30, 100, 1, 0);
   slider(k, '표시 시간', ['signal', 'seconds'], 0.5, 5, 0.1, 1);
+
+  hint(k, '게임 위에 뜨는 작은 파형 창입니다. <b>끌어서 정하기</b>를 누르면 실제 화면에서 끌어 옮기고 모서리로 크기를 바꿀 수 있습니다.');
+
+  let saved = null;
+  try { saved = localStorage.getItem('adminPage'); } catch (e) { /* 없음 */ }
+  showPage(saved);
 
   // ── 위쪽: 프리셋, 단축키 칩 ──
   const pbox = $('#presets');

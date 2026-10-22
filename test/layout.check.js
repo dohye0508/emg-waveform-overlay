@@ -48,7 +48,7 @@ const CHECK = `(() => {
     if (r.right > rr.right + 1.5 || r.bottom > rr.bottom + 1.5) bad.push('화면 밖: ' + name);
     if (e.children.length === 0 && e.textContent.trim() && cs.display !== 'inline') {
       const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.3;
-      if (r.height > lh * 1.6 && cs.whiteSpace !== 'nowrap' && !e.matches('.warn')) bad.push('줄바꿈: ' + name);
+      if (r.height > lh * 1.6 && cs.whiteSpace !== 'nowrap' && !e.matches('.warn, .hint, .hint *')) bad.push('줄바꿈: ' + name);
     }
   });
   return bad;
@@ -60,14 +60,21 @@ const CHECK = `(() => {
   for (const [w, h] of [[1440, 900], [1280, 720], [1024, 640], [800, 600]]) {
     await win.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
     await new Promise((r) => setTimeout(r, 400));
-    const bad = await win.evaluate(CHECK);
-    console.log(`${pageMatch} ${w}x${h}: 문제 ${bad.length}개`);
-    bad.forEach((b) => console.log('   ' + b));
-    failed += bad.length;
-    if (shotDir) {
-      const shot = await win.send('Page.captureScreenshot', { format: 'png' });
-      fs.writeFileSync(path.join(shotDir, `${pageMatch.replace('.html', '')}-${w}x${h}.png`), Buffer.from(shot.result.data, 'base64'));
+    // 관리자 화면은 탭마다 따로 본다 (보이는 탭의 칸만 검사된다)
+    const tabs = (await win.evaluate("document.querySelectorAll('#tabs .tab').length")) || 1;
+    for (let t = 0; t < tabs; t++) {
+      const name = tabs > 1 ? `${w}x${h} 탭${t + 1}` : `${w}x${h}`;
+      if (tabs > 1) { await win.evaluate(`document.querySelectorAll('#tabs .tab')[${t}].click()`); await new Promise((r) => setTimeout(r, 150)); }
+      const bad = await win.evaluate(CHECK);
+      console.log(`${pageMatch} ${name}: 문제 ${bad.length}개`);
+      bad.forEach((b) => console.log('   ' + b));
+      failed += bad.length;
+      if (shotDir) {
+        const shot = await win.send('Page.captureScreenshot', { format: 'png' });
+        fs.writeFileSync(path.join(shotDir, `${pageMatch.replace('.html', '')}-${name.replace(' ', '-')}.png`), Buffer.from(shot.result.data, 'base64'));
+      }
     }
+    if (tabs > 1) await win.evaluate("document.querySelectorAll('#tabs .tab')[0].click()");
   }
   await win.send('Emulation.clearDeviceMetricsOverride');
   win.close();

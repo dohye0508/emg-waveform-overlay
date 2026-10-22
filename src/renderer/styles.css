@@ -69,8 +69,27 @@ h1 { margin: 0; font-family: var(--font-title); font-weight: 400; font-size: 34p
 .s-sky.on { border-color: color-mix(in srgb, var(--sky) 45%, transparent); }
 .s-sky.on .track { background: var(--sky); }
 
-/* ───────── 아래: 설정 칸 3열 × 2단 ───────── */
-#grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 210px 302px; gap: 16px; flex: none; }
+/* ───────── 가운데: 설정 탭 ───────── */
+.tabs { display: flex; gap: 12px; height: 60px; flex: none; }
+.tab { --accent: var(--sky); flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 0 18px; border-radius: 16px; cursor: pointer; text-align: left;
+  background: var(--surface); border: 1px solid var(--line); color: var(--sub); transition: background 120ms, border-color 120ms; }
+.tab:hover:not(.on) { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.tab .badge { opacity: 0.6; }
+.tab-text { display: flex; flex-direction: column; min-width: 0; }
+.tab-title { font-family: var(--font-title); font-size: 22px; line-height: 1.15; white-space: nowrap; }
+.tab-sub { font-size: 14px; font-weight: 700; color: var(--dim); white-space: nowrap; }
+.tab.on { color: var(--text); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: inset 0 -3px 0 var(--accent); }
+.tab.on .badge { opacity: 1; }
+.tab.on .tab-sub { color: var(--sub); }
+
+/* ───────── 아래: 탭마다 칸 2개 ───────── */
+#pages { flex: 1 1 0; min-height: 0; }
+.page { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; height: 100%; }
+.page .card { gap: 10px; padding: 18px 22px; }
+.hint { position: relative; z-index: 1; margin: auto 0 0; padding: 14px 16px; border-radius: 12px; background: var(--inset); border: 1px solid var(--line-soft);
+  font-size: 16px; font-weight: 500; line-height: 1.55; color: var(--sub); }
+.hint b { color: var(--accent); font-weight: 700; }
 .card { --accent: var(--sky); position: relative; min-width: 0; padding: 16px 18px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
 .card::before { content: ''; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: var(--accent); opacity: 0.85; }
 .card::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(420px 140px at 0% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%); }
