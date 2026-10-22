@@ -7,7 +7,7 @@ const path = require('path');
 // 앱 아이콘 (작업 표시줄·창·트레이). exe 아이콘은 assets/icon.ico (package.json build.win.icon)
 const APP_ICON = path.join(__dirname, '..', 'renderer', 'images', 'icon.png');
 const { pathToFileURL } = require('url');
-const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, screen, nativeImage, shell } = require('electron');
+const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, screen, nativeImage, shell, protocol, net } = require('electron');
 const { HidInput } = require('./hidinput');
 const { EmgWindow } = require('./emg');
 const { KeyEngine } = require('./engine');
@@ -18,6 +18,11 @@ const { Store, normalizeSettings, merge } = require('./store');
 const { AutoCal, suggestThreshold } = require('./calib');
 const games = require('./games');
 const winfocus = require('./winfocus');
+const adofaiProtocol = require('./adofai-protocol');
+
+protocol.registerSchemesAsPrivileged([{ scheme: 'adofai', privileges: {
+  standard: true, secure: true, supportFetchAPI: true, stream: true, corsEnabled: true,
+} }]);
 
 const FRAME_MS = 33;
 const SIGNAL_LOST_MS = 500;
@@ -236,6 +241,7 @@ function playGame(id) {
   if (!game) return;
   if (game.native) { playNative(game); return; }
   const old = gameWin;
+  if (old && activeGame) globalShortcut.unregister(activeGame.exitAccel || 'Escape');
   gameWin = null;
   if (old && !old.isDestroyed()) old.close();
   activeGame = game;
@@ -249,12 +255,20 @@ function playGame(id) {
   gameWin = win;
   win.setMenu(null);
   const wc = win.webContents;
+  if (game.id === 'adofai') {
+    wc.on('console-message', (_event, level, message) => {
+      if (level >= 2) console.error('[adofai]', message);
+    });
+  }
   wc.setWindowOpenHandler(() => ({ action: 'deny' }));
   // 게임 페이지 밖(사이트의 다른 페이지 등)으로는 넘어가지 않는다
   const allowed = game.url ? game.url.replace(/[^/]*$/, '') : 'file:';
   wc.on('will-navigate', (e, url) => { if (!url.startsWith(allowed)) e.preventDefault(); });
   wc.on('before-input-event', (e, input) => {
-    if (input.type === 'keyDown' && input.key === 'Escape') { e.preventDefault(); stopGame(); }
+    const exiting = game.exitAccel === 'Ctrl+Q'
+      ? input.control && input.key.toLowerCase() === 'q'
+      : input.key === 'Escape';
+    if (input.type === 'keyDown' && exiting) { e.preventDefault(); stopGame(); }
   });
   // 작은 화면용으로 만든 게임(floppybird 는 날 수 있는 칸이 420px)은 화면 높이에 맞춰 확대한다
   wc.on('did-finish-load', () => {
@@ -263,13 +277,14 @@ function playGame(id) {
     if (game.css) wc.insertCSS(game.css);
   });
   win.once('ready-to-show', () => { win.show(); win.focus(); });
-  // 게임 창에 포커스가 없어도 Esc 로 나갈 수 있게 게임 중에만 전역으로 잡는다
-  try { if (!globalShortcut.isRegistered('Escape')) globalShortcut.register('Escape', stopGame); } catch (_) { /* ignore */ }
+  // 얼불춤은 Esc를 일시정지에 사용한다.
+  const exitAccel = game.exitAccel || 'Escape';
+  try { if (!globalShortcut.isRegistered(exitAccel)) globalShortcut.register(exitAccel, stopGame); } catch (_) { /* ignore */ }
   win.on('closed', () => {
     // 다른 게임으로 바꾸며 닫은 옛 창이면 새 게임 상태를 건드리지 않는다
     if (gameWin !== win) return;
     console.log('[game] 끝', id);
-    try { globalShortcut.unregister('Escape'); } catch (_) { /* ignore */ }
+    try { globalShortcut.unregister(exitAccel); } catch (_) { /* ignore */ }
     gameWin = null;
     activeGame = null;
     setRunning(false);
@@ -554,6 +569,7 @@ process.on('uncaughtException', (err) => {
 });
 
 app.whenReady().then(() => {
+  adofaiProtocol.register(protocol, net, path.join(__dirname, '..', 'renderer', 'games', 'adofai', 'assets', 'webgl'));
   store = new Store(app.getPath('userData'));
   settings = store.load();
   ring = new layout.SampleRing(60000);

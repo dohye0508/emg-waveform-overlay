@@ -2,3 +2,8 @@ node_modules/
 dist/
 build/
 *.log
+
+# Keep research extracts local; ship the playable WebGL build.
+src/renderer/games/adofai/assets/*
+!src/renderer/games/adofai/assets/webgl/
+!src/renderer/games/adofai/assets/webgl/Build/

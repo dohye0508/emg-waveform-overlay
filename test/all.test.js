@@ -366,7 +366,7 @@ test('사용자 모드: 게임 목록, 게임별 키 저장(Esc·없는 키는 �
   assert.deepStrictEqual([games.gameById('breakout').levels, games.gameById('breakout').mode], [2, 'hold']);
   assert.deepStrictEqual([games.gameById('stack').mode, games.gameById('stack').file], ['tap', 'games/stack/index.html']);
   const ad = games.gameById('adofai');
-  assert.deepStrictEqual([ad.native, ad.windowTitle, ad.launchUrl, ad.exitAccel, ad.mode], [true, 'A Dance of Fire and Ice', 'steam://rungameid/977950', 'Ctrl+Q', 'tap']);
+  assert.deepStrictEqual([!!ad.native, ad.url, ad.launchUrl, ad.exitAccel, ad.mode], [false, 'adofai://game/index.html', undefined, 'Ctrl+Q', 'tap']);
   assert.strictEqual(games.gameById('gd').url, 'https://www.geometrydash.com/game/index.html');
   assert.strictEqual(games.gameById('nope'), null);
   const s = normalizeSettings({ user: { keys: { gd: 'Escape', flappy: 'MouseLeft' } }, key: { levels: 2, code: 'ArrowLeft', mode: 'tap' }, trigger: { threshold: 12 } });
@@ -571,6 +571,46 @@ test('구간 RMS: 상수는 0, 사인파는 진폭/√2, 필터는 직류와 60 
   const win2 = new EmgWindow();
   win2.add(z);
   assert.ok(Math.abs(win2.take().rms - 40 / Math.SQRT2) < 4, '1000 Hz 신호가 깎였다');
+});
+
+test('얼불춤 로컬 프로토콜은 빌드 폴더 밖의 파일을 열지 않는다', () => {
+  const { assetPath } = require('../src/main/adofai-protocol');
+  const root = path.resolve('local-webgl-fixture');
+  assert.strictEqual(assetPath(root, 'adofai://game/Build/WebGL.wasm'), path.join(root, 'Build', 'WebGL.wasm'));
+  assert.strictEqual(assetPath(root, 'adofai://game/'), path.join(root, 'index.html'));
+  for (const url of ['file:///secret', 'adofai://other/index.html', 'adofai://game/%2e%2e%5csecret', 'adofai://game/%00', 'adofai://game/C:%5csecret', 'adofai://user@game/index.html']) {
+    assert.throws(() => assetPath(root, url), url);
+  }
+});
+
+test('홈 화면: 내장 게임은 외부 게임 실행 표시를 숨기고, 외부 게임 상태는 유지한다', () => {
+  const vm = require('vm');
+  const pre = { addEventListener() {} };
+  const status = {};
+  const element = { style: {}, classList: { toggle() {} }, addEventListener() {} };
+  const card = {
+    dataset: { id: 'adofai' },
+    querySelectorAll: () => [],
+    querySelector: (s) => s === '.prelaunch' ? pre : s === '.tag.state' ? status : element,
+  };
+  const context = vm.createContext({
+    document: { querySelector: () => element, querySelectorAll: () => [card] },
+    window: { innerWidth: 1440, innerHeight: 900, addEventListener() {}, api: { getState: () => new Promise(() => {}) } },
+    requestAnimationFrame() {},
+  });
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/renderer/home.js'), 'utf8'), context);
+  for (const [native, state, preHidden, statusHidden, text] of [
+    [false, null, true, true],
+    [true, 'off', false, true],
+    [true, 'launching', true, false, '켜는 중…'],
+    [true, 'on', true, false, '켜져 있음'],
+    [false, null, true, true],
+  ]) {
+    context.render({ live: { connected: false }, version: 'test', games: [{ id: 'adofai', native, state }] });
+    assert.strictEqual(pre.hidden, preHidden);
+    assert.strictEqual(status.hidden, statusHidden);
+    if (text) assert.strictEqual(status.textContent, text);
+  }
 });
 
 console.log(`\n${passed}개 통과`);

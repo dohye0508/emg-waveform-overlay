@@ -1,6 +1,8 @@
 # CLAUDE.md
 
-## 상태: v1.9.0
+## 상태: v1.10.2 + 내장 얼불춤
+
+현재 얼불춤은 `assets/webgl/`의 Unity WebGL 산출물을 `adofai://game`으로 실행한다. 아래 v1.5의 Steam 실행 설명은 과거 구현이다. 대용량 파일은 Git LFS로 포함하므로 새 복제본에서는 `git lfs pull`이 필요하다. Esc는 게임 일시정지, Ctrl+Q는 게임 창 종료다. Unity 복원 프로젝트는 이 저장소에 포함되지 않는다.
 
 Python/tkinter 판을 Electron으로 새로 만들었다. 단위 시험·실제 SendInput 시험·화면 넘침 검사·exe 실행 확인은 끝났다. **실제 SpikerBox를 꽂은 상태의 확인(힘 줄 때 키 눌림, 케이블 분리 시 키 해제)과 실제 게임 위 오버레이는 아직 안 했다** (개발 중 장치가 없었다).
 
