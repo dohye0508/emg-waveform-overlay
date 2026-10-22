@@ -1,4 +1,4 @@
 src/renderer/games/adofai/assets/webgl/**/*.data filter=lfs diff=lfs merge=lfs -text
 src/renderer/games/adofai/assets/webgl/**/*.wasm filter=lfs diff=lfs merge=lfs -text
 src/renderer/games/adofai/assets/webgl/**/*.webm filter=lfs diff=lfs merge=lfs -text
-src/renderer/games/adofai/assets/webgl/** -text
+src/renderer/games/adofai/assets/webgl/** -text -whitespace linguist-generated=true

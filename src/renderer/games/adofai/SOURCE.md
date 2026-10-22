@@ -6,6 +6,8 @@
 
 저장소 복제 후 `git lfs pull`, `npm install`, `npm start` 순서로 실행한다. `npm run build:win`은 에셋까지 포함한 Windows 포터블 exe를 만든다. 큰 `.data`, `.wasm`, `.webm` 파일은 Git LFS로 관리한다. 게임 외 연구용 맵·음원 추출물은 포함하지 않는다.
 
+GitHub는 공개 포크에 새 LFS 객체 업로드를 허용하지 않아 `.lfsconfig`가 공개 배포 저장소 `ji5zi5/emg-waveform-overlay-builds`의 LFS 저장소를 가리킨다. Git LFS는 이 설정으로 실제 파일을 자동 다운로드한다. 이 세 대용량 파일의 다운로드는 해당 배포 저장소의 가용성과 LFS 사용량 한도에 의존한다.
+
 `adofai://game/index.html`은 `src/main/adofai-protocol.js`가 이 빌드 폴더의 파일로 연결한다. Steam을 실행하지 않으며, Esc는 게임 일시정지에 전달하고 Ctrl+Q로 게임 창을 닫는다. 게임 내부 메뉴와 로딩을 포함한 Unity 런타임이 실행되므로 첫 로딩에는 시간이 걸린다.
 
 ## 포함된 빌드의 복원 내용과 검증 범위
