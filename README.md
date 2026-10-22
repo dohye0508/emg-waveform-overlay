@@ -28,16 +28,18 @@ Electron으로 만들었고, 장치 읽기와 필터는 스코어보드(`festiva
 
 | | | |
 |:-:|:-:|:-:|
-| ![Bunny Jump](docs/images/game-jumper.jpg) | ![Helicopter Game](docs/images/game-copter.jpg) | ![Space Invaders](docs/images/game-invaders.jpg) |
-| **Bunny Jump** | **Helicopter Game** | **Space Invaders** |
-| ![Stack](docs/images/game-stack.jpg) | ![벽돌깨기](docs/images/game-breakout.jpg) | ![Flappy Bird](docs/images/game-flappy.jpg) |
-| **Stack** | **벽돌깨기** | **Flappy Bird** |
+| ![Geometry Dash](docs/images/game-gd.jpg) | ![얼음과 불의 춤](docs/images/game-adofai.jpg) | ![Bunny Jump](docs/images/game-jumper.jpg) |
+| **Geometry Dash** | **얼음과 불의 춤** | **Bunny Jump** |
+| ![Helicopter Game](docs/images/game-copter.jpg) | ![Space Invaders](docs/images/game-invaders.jpg) | ![Stack](docs/images/game-stack.jpg) |
+| **Helicopter Game** | **Space Invaders** | **Stack** |
+| ![벽돌깨기](docs/images/game-breakout.jpg) | ![Flappy Bird](docs/images/game-flappy.jpg) | |
+| **벽돌깨기** | **Flappy Bird** | |
 
 | 게임 | 조작 | 출처 (라이선스) |
 |---|---|---|
 | Geometry Dash | 힘을 주면 점프 | RobTop Games 공식 웹 데모 (인터넷 필요) |
 | Flappy Bird | 힘을 줄 때마다 날갯짓. 파이프 틈이 넓은 쉬운 모드 | [nebez/floppybird](https://github.com/nebez/floppybird) (Apache-2.0) |
-| 얼음과 불의 춤 | 박자에 맞춰 힘주기 | 포함된 Unity WebGL 빌드 (아래 설명) |
+| 얼음과 불의 춤 | 박자에 맞춰 힘주기. `Esc` 일시정지, `Ctrl+Q` 나가기 | 7th Beat Games |
 | Space Invaders | 약하게 = 왼쪽, 세게 = 오른쪽. 발사는 자동 | [trungvose/space-invaders-phaser-3](https://github.com/trungvose/space-invaders-phaser-3) (MIT) |
 | Stack | 블록이 아래 층 위에 왔을 때 힘주기 | [zurkon/playstack](https://github.com/zurkon/playstack) (MIT) |
 | 벽돌깨기 | 약하게 = 왼쪽, 세게 = 오른쪽. 움직이면 공 발사. WebGPU 필요 | [toji/spookyball](https://github.com/toji/spookyball) (MIT) |
