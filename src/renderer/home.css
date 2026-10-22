@@ -67,3 +67,4 @@ button.tag:hover { filter: brightness(1.08); }
 .g-breakout { --accent: var(--amber); }
 .g-copter { --accent: var(--coral); }
 .g-copter .start { background: linear-gradient(180deg, #FFB37A 0%, #FF8A4C 100%); }
+.g-jumper { --accent: var(--mint); }

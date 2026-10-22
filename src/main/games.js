@@ -39,6 +39,10 @@ const GAMES = [
     defaultKey: 'ArrowLeft', defaultKey2: 'ArrowRight', online: false },
   // 비행기(헬리콥터류): orangespaceman/js-canvas-copter (WTFPL) 물리·틀 + Kenney Tappy Plane (CC0) 그림 (games/copter/SOURCE.md). 힘을 주는 동안 상승.
   { id: 'copter', name: 'Helicopter Game', file: 'games/copter/index.html', mode: 'hold', defaultKey: 'Space', online: false },
+  // 점프(두들 점프류): ourcade/infinite-jumper-template-phaser3 (MIT, Phaser 3) + Kenney Jumper Pack (CC0) 그림 (games/jumper/SOURCE.md).
+  // 토끼는 저절로 계속 뛰고, 2단계: 약하게 = ←, 세게 = →.
+  { id: 'jumper', name: 'Bunny Jump', file: 'games/jumper/index.html', levels: 2, mode: 'hold',
+    defaultKey: 'ArrowLeft', defaultKey2: 'ArrowRight', online: false },
 ];
 
 // 게임 안에서 나가기(Esc)와 겹치는 키는 고를 수 없다
