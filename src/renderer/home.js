@@ -75,7 +75,7 @@ document.querySelectorAll('.game').forEach((card) => {
   const id = card.dataset.id;
   card.querySelectorAll('.keychip').forEach((chip) => keyCapture(chip, id, chip.dataset.field || 'keys'));
   $('.start', card).addEventListener('click', () => window.api.playGame(id));
-  // Windows 게임(얼불춤): 켜져 있는지 표시, 꺼져 있으면 미리 켜기
+  // 외부 Windows 게임만 실행 상태와 미리 켜기를 표시한다.
   const pre = $('.prelaunch', card);
   const st = $('.tag.state', card);
   if (pre) pre.addEventListener('click', (e) => { e.stopPropagation(); window.api.prelaunchGame(id); });
@@ -83,8 +83,8 @@ document.querySelectorAll('.game').forEach((card) => {
     syncers.push(() => {
       const g = S.games.find((x) => x.id === id);
       const state = g ? g.state : 'off';
-      pre.hidden = state !== 'off';
-      st.hidden = state === 'off';
+      pre.hidden = !g?.native || state !== 'off';
+      st.hidden = !g?.native || (state !== 'on' && state !== 'launching');
       st.textContent = state === 'on' ? '켜져 있음' : '켜는 중…';
       st.className = 'tag state ' + (state === 'on' ? 'on' : 'wait');
     });

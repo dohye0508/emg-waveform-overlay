@@ -12,7 +12,7 @@ Electron으로 만들었고, 장치 읽기와 필터는 스코어보드(`festiva
 
 1. SpikerBox를 USB로 연결하고 [Releases](https://github.com/dohye0508/emg-waveform-overlay/releases/latest)에서 받은 `emg-waveform-overlay.exe`를 실행합니다. 설치는 필요 없습니다.
 2. 처음 나오는 **사용자 화면**에서 게임 카드의 `시작`을 누릅니다.
-3. 근육에 힘을 주면 게임이 움직입니다. 게임 중 `Esc`를 누르면 사용자 화면으로 돌아옵니다.
+3. 근육에 힘을 주면 게임이 움직입니다. 게임 중 `Esc`를 누르면 사용자 화면으로 돌아옵니다. 얼음과 불의 춤은 `Ctrl+Q`로 돌아오고, `Esc`는 일시정지입니다.
 4. 키가 너무 쉽게 눌리거나 잘 안 눌리면 `Ctrl+D`로 **관리자 화면**에 가서 `역치 자동 설정`을 합니다.
 
 ## 사용자 화면
@@ -37,15 +37,15 @@ Electron으로 만들었고, 장치 읽기와 필터는 스코어보드(`festiva
 |---|---|---|
 | Geometry Dash | 힘을 주면 점프 | RobTop Games 공식 웹 데모 (인터넷 필요) |
 | Flappy Bird | 힘을 줄 때마다 날갯짓. 파이프 틈이 넓은 쉬운 모드 | [nebez/floppybird](https://github.com/nebez/floppybird) (Apache-2.0) |
-| 얼음과 불의 춤 | 박자에 맞춰 힘주기 | Steam 정식판 (아래 설명) |
+| 얼음과 불의 춤 | 박자에 맞춰 힘주기 | 포함된 Unity WebGL 빌드 (아래 설명) |
 | Space Invaders | 약하게 = 왼쪽, 세게 = 오른쪽. 발사는 자동 | [trungvose/space-invaders-phaser-3](https://github.com/trungvose/space-invaders-phaser-3) (MIT) |
 | Stack | 블록이 아래 층 위에 왔을 때 힘주기 | [zurkon/playstack](https://github.com/zurkon/playstack) (MIT) |
 | 벽돌깨기 | 약하게 = 왼쪽, 세게 = 오른쪽. 움직이면 공 발사. WebGPU 필요 | [toji/spookyball](https://github.com/toji/spookyball) (MIT) |
 | Helicopter Game | 힘을 주는 동안 올라감. 바위를 피하고 별을 모음 | [orangespaceman/js-canvas-copter](https://github.com/orangespaceman/js-canvas-copter) (WTFPL) + [Kenney Tappy Plane](https://kenney.nl/assets/tappy-plane) (CC0) |
 | Bunny Jump | 토끼가 저절로 뜀. 약하게 = 왼쪽, 세게 = 오른쪽. 떨어지면 끝 | [ourcade/infinite-jumper-template-phaser3](https://github.com/ourcade/infinite-jumper-template-phaser3) (MIT) + [Kenney Jumper Pack](https://kenney.nl/assets/jumper-pack) (CC0) |
 
-- Geometry Dash와 얼음과 불의 춤을 뺀 게임은 앱 안에 들어 있어서 인터넷 없이도 됩니다. 게임마다 출처와 고친 곳은 `src/renderer/games/<게임>/SOURCE.md`에 있습니다.
-- **얼음과 불의 춤**은 Steam에 깔린 정식 게임을 씁니다. 켜는 데 시간이 걸리니 카드의 `미리 켜기`로 먼저 켜 두면, `시작`을 누를 때 그 창을 바로 앞으로 가져옵니다(꺼져 있으면 Steam으로 켭니다). 이 게임은 Esc를 일시정지로 쓰므로 `Ctrl+Q`로 돌아오고, 돌아와도 게임은 켜 둔 채로 둡니다. 게임 설정에서 창 모드나 테두리 없는 창으로 두어야 오버레이가 보입니다.
+- Geometry Dash를 뺀 게임은 앱 안에 들어 있어서 인터넷 없이도 됩니다. 게임마다 출처와 고친 곳은 `src/renderer/games/<게임>/SOURCE.md`에 있습니다.
+- **얼음과 불의 춤**은 포함된 WebGL 빌드를 Electron 게임 창 안에서 실행합니다. Steam이나 별도 게임 설치는 필요 없습니다. `Esc`는 게임 일시정지, `Ctrl+Q`는 게임 창을 닫고 사용자 화면으로 돌아가기입니다.
 
 ## 오버레이
 
@@ -96,7 +96,11 @@ Electron으로 만들었고, 장치 읽기와 필터는 스코어보드(`festiva
 
 ## 개발
 
+Git LFS를 설치한 뒤 저장소를 복제해야 얼불춤의 대용량 에셋도 내려받을 수 있습니다. GitHub의 소스 ZIP에는 실제 에셋 대신 LFS 포인터가 들어갈 수 있으므로 개발에는 Git 복제를 사용하세요. 배포 exe에는 에셋이 포함되어 Git LFS가 필요 없습니다.
+
 ```bash
+git lfs install
+git lfs pull           # WebGL.data, WebGL.wasm, 동영상 에셋 다운로드
 npm install
 npm start              # 개발 실행
 npm test               # 단위 시험 (장치·Electron 필요 없음)
